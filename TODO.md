@@ -6,8 +6,7 @@
 - No backend; simulate submission.
 
 ## Plan
-- [x] Create app/feedback/page.tsx with form (name, feature input, description textarea, submit button with icons).
-- [x] Update components/navbar.tsx to include "Feedback" nav link and button (after Contribute).
+- [x] Removed feedback feature completely as per user request (deleted app/feedback/, removed navbar links/buttons).
 
 ## Dependent Files
 - app/feedback/page.tsx (new).

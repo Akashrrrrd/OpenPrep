@@ -35,14 +35,9 @@ export function Navbar() {
               </Link>
             </li>
             <li>
-              <Link className="text-sm hover:underline underline-offset-4" href="/feedback">
-                Feedback
-              </Link>
-            </li>
-            <li>
               <a
                 className="text-sm hover:underline underline-offset-4"
-                href="https://github.com/"
+                href="https://github.com/Akashrrrrd/OpenPrep"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -54,9 +49,6 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link href="/contribute" className="hidden sm:block">
             <Button size="sm">Contribute</Button>
-          </Link>
-          <Link href="/feedback" className="hidden sm:block">
-            <Button size="sm" variant="outline">Feedback</Button>
           </Link>
           <Button
             variant="ghost"
