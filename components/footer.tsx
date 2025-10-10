@@ -1,3 +1,5 @@
+import { Github, Linkedin } from "lucide-react"
+
 export function Footer() {
   return (
     <footer className="mt-12 border-t">
@@ -7,9 +9,16 @@ export function Footer() {
           <a href="https://github.com/Akashrrrrd/OpenPrep" target="_blank" rel="noopener noreferrer" className="hover:underline">
             GitHub Repo
           </a>
-          <a href="#" className="hover:underline">
-            Akash R
-          </a>
+          <div className="flex items-center gap-2">
+            <a href="https://github.com/Akashrrrrd" target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-muted rounded-sm transition-colors">
+              <Github className="h-4 w-4" />
+              <span className="sr-only">GitHub</span>
+            </a>
+            <a href="https://www.linkedin.com/in/aaakashrajendran/" target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-muted rounded-sm transition-colors">
+              <Linkedin className="h-4 w-4" />
+              <span className="sr-only">LinkedIn</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>

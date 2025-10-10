@@ -3,7 +3,12 @@
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun, Menu } from "lucide-react"
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export function Navbar() {
   const { theme, setTheme } = useTheme()
@@ -17,8 +22,9 @@ export function Navbar() {
       <div className="mx-auto w-full max-w-6xl px-4 h-16 flex items-center justify-between">
         <Link
           href="/"
-          className="font-semibold tracking-tight hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1"
+          className="flex items-center gap-2 font-semibold tracking-tight hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1"
         >
+          <img src="/logos/logo.png" alt="OpenPrep Logo" className="h-8 w-8 dark:invert" />
           OpenPrep
           <span className="sr-only">{"OpenPrep Home"}</span>
         </Link>
@@ -54,34 +60,44 @@ export function Navbar() {
             variant="ghost"
             size="default"
             onClick={toggleTheme}
-            className="hidden sm:block h-10 w-10 p-0 relative"
+            className="h-10 w-10 p-0 relative"
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-        </div>
-      </div>
-      {/* Mobile nav */}
-      <div className="md:hidden border-t">
-        <div className="mx-auto w-full max-w-6xl px-4 py-2 flex items-center justify-between text-sm">
-          <Link className="hover:underline underline-offset-4" href="/">
-            Home
-          </Link>
-          <Link className="hover:underline underline-offset-4" href="/contribute">
-            Contribute
-          </Link>
-          <Link className="hover:underline underline-offset-4" href="/feedback">
-            Feedback
-          </Link>
-          <a
-            className="hover:underline underline-offset-4"
-            href="https://github.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" className="h-10 w-10 p-0">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="p-0 w-[280px]">
+              <div className="flex flex-col h-full p-4 space-y-4">
+                <Link
+                  href="/"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/contribute"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                >
+                  Contribute
+                </Link>
+                <a
+                  href="https://github.com/Akashrrrrd/OpenPrep"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                >
+                  GitHub
+                </a>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
