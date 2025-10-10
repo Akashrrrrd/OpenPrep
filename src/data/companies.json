@@ -1,0 +1,194 @@
+[
+  {
+    "id": "accenture",
+    "name": "Accenture",
+    "logo": "/logos/accenture.png",
+    "driveLink": "https://drive.google.com/drive/folders/14KY-N173ZGD3P-1PsceLAAl6mf0xplk_?usp=drive_link"
+  },
+  {
+    "id": "amcat",
+    "name": "AMCAT",
+    "logo": "/logos/amcat.png",
+    "driveLink": "https://drive.google.com/drive/folders/16gkza8e294gPXdmejStqU7F_GwTsx76S?usp=drive_link"
+  },
+  {
+    "id": "auditime",
+    "name": "Audi Time",
+    "logo": "/logos/auditime.png",
+    "driveLink": "https://drive.google.com/drive/folders/1mLyy6XOAYzHAIwZW32INBeYie8iBc6Hj?usp=drive_link"
+  },
+  {
+    "id": "capgemini",
+    "name": "Capgemini",
+    "logo": "/logos/capgemini.png",
+    "driveLink": "https://drive.google.com/drive/folders/1Dge7E_VsA6RtnQDJ7gcJGhnPHvLm6DOj?usp=drive_link"
+  },
+  {
+    "id": "cocubes",
+    "name": "Cocubes",
+    "logo": "/logos/cocubes.png",
+    "driveLink": "https://drive.google.com/drive/folders/1jOYtJntH5pAZyLk7jI1EBoFbz-q5hUKE?usp=drive_link"
+  },
+  {
+    "id": "cognizant",
+    "name": "Cognizant",
+    "logo": "/logos/cognizant.png",
+    "driveLink": "https://drive.google.com/drive/folders/1d5I1KTBJETIPBNBGc8rG1innZCeDG7VI?usp=drive_link"
+  },
+  {
+    "id": "dell",
+    "name": "Dell",
+    "logo": "/logos/dell.png",
+    "driveLink": "https://drive.google.com/drive/folders/1OcqUjgTUCCczyv8xRBNZbofb5rp_B-ce?usp=drive_link"
+  },
+  {
+    "id": "deloitte",
+    "name": "Deloitte",
+    "logo": "/logos/deloitte.png",
+    "driveLink": "https://drive.google.com/drive/folders/1SbFKmZcr6Xl6b_uSkVof3Qp4Jhl1dK8y?usp=drive_link"
+  },
+  {
+    "id": "elitmus",
+    "name": "Elitmus",
+    "logo": "/logos/elitmus.png",
+    "driveLink": "https://drive.google.com/drive/folders/1A-62aD5UyXv11Dw5vjQ2yXifIJpnG-by?usp=drive_link"
+  },
+  {
+    "id": "epam",
+    "name": "EPAM",
+    "logo": "/logos/epam.png",
+    "driveLink": "https://drive.google.com/drive/folders/1QmZkLXI4uZjGu7kOhjBuIFQGwBlsIPfx?usp=drive_link"
+  },
+  {
+    "id": "hcl",
+    "name": "HCL",
+    "logo": "/logos/hcl.png",
+    "driveLink": "https://drive.google.com/drive/folders/1PJCcLt4D9Oq4ynap6T5rO2s7_gegiOA2?usp=drive_link"
+  },
+  {
+    "id": "hexaware",
+    "name": "Hexaware",
+    "logo": "/logos/hexaware.png",
+    "driveLink": "https://drive.google.com/drive/folders/159wsJZI-xGNEU4dYatZ3_4XxUEIMNbsa?usp=drive_link"
+  },
+  {
+    "id": "huawei",
+    "name": "Huawei Tech",
+    "logo": "/logos/huawei.png",
+    "driveLink": "https://drive.google.com/drive/folders/1Uc83IsPFsouJlgxTTnZEKokAU76qZvwT?usp=drive_link"
+  },
+  {
+    "id": "ibm",
+    "name": "IBM",
+    "logo": "/logos/ibm.png",
+    "driveLink": "https://drive.google.com/drive/folders/1Abvu_pE7IvLWPhvctLagolCeNkIRLiGj?usp=drive_link"
+  },
+  {
+    "id": "infosys",
+    "name": "Infosys",
+    "logo": "/logos/infosys.png",
+    "driveLink": "https://drive.google.com/drive/folders/16WWF8fq86ERYh7f4npFTGFVaxYM-ZFjh?usp=drive_link"
+  },
+  {
+    "id": "ionidea",
+    "name": "Ion Idea",
+    "logo": "/logos/ionidea.png",
+    "driveLink": "https://drive.google.com/drive/folders/1Mzhjd3CCWUQ5R_dCKx57EqfURrxos37x?usp=drive_link"
+  },
+  {
+    "id": "lt",
+    "name": "L&T",
+    "logo": "/logos/lt.png",
+    "driveLink": "https://drive.google.com/drive/folders/1rmk4WEgl88FJwRcdxi82XKunS3QtKJ1F?usp=drive_link"
+  },
+  {
+    "id": "lgsoft",
+    "name": "LG Soft",
+    "logo": "/logos/lgsoft.png",
+    "driveLink": "https://drive.google.com/drive/folders/170EY9sQuQHfAfQqoy4PSXnE9cKn6YH7Y?usp=drive_link"
+  },
+  {
+    "id": "lumendata",
+    "name": "Lumen Data",
+    "logo": "/logos/lumendata.png",
+    "driveLink": "https://drive.google.com/drive/folders/1TkK5WjJ7Xy2tXYuxUOPBzb9mbdYlrih1?usp=drive_link"
+  },
+  {
+    "id": "mindtree",
+    "name": "MindTree",
+    "logo": "/logos/mindtree.png",
+    "driveLink": "https://drive.google.com/drive/folders/1lf2Vcncc8-gfpJEPrtKAt04fOe_UIcQ7?usp=drive_link"
+  },
+  {
+    "id": "mphasis",
+    "name": "Mphasis",
+    "logo": "/logos/mphasis.png",
+    "driveLink": "https://drive.google.com/drive/folders/1OZnyUeft9ply_2fyhyyM-tOiy_pumd6g?usp=drive_link"
+  },
+  {
+    "id": "robertbosch",
+    "name": "Robert Bosch",
+    "logo": "/logos/robertbosch.png",
+    "driveLink": "https://drive.google.com/drive/folders/128MmvOOq7VlGV6g-zisyk_mhJFlzpyUk?usp=drive_link"
+  },
+  {
+    "id": "secureeyes",
+    "name": "SecurEyes",
+    "logo": "/logos/secureeyes.png",
+    "driveLink": "https://drive.google.com/drive/folders/1NQJnH5gpr7gj-eEnqmayENu2Wp82TWRa?usp=drive_link"
+  },
+  {
+    "id": "soprasteria",
+    "name": "Sopra Steria",
+    "logo": "/logos/soprasteria.png",
+    "driveLink": "https://drive.google.com/drive/folders/1JfS3bLRGJC-JD3QFDr7f17xweMfsRTc7?usp=drive_link"
+  },
+  {
+    "id": "tcs",
+    "name": "TCS",
+    "logo": "/logos/tcs.png",
+    "driveLink": "https://drive.google.com/drive/folders/1nfADjHiKaMKhOChFAHHZIDGr66LJlmDZ?usp=drive_link"
+  },
+  {
+    "id": "techmahindra",
+    "name": "Tech Mahindra",
+    "logo": "/logos/techmahindra.png",
+    "driveLink": "https://drive.google.com/drive/folders/1S8X2ePQCyFCvY6H28ZR_iasrtn_n6_DT?usp=drive_link"
+  },
+  {
+    "id": "teksystem",
+    "name": "Tek System",
+    "logo": "/logos/teksystem.png",
+    "driveLink": "https://drive.google.com/drive/folders/1SPX88IucArthCKCRrlPHQevvzNpCQ3JV?usp=drive_link"
+  },
+  {
+    "id": "unisys",
+    "name": "Unisys",
+    "logo": "/logos/unisys.png",
+    "driveLink": "https://drive.google.com/drive/folders/1pE5lzCXVzgfakYQCAFAqgw_-SSpHv-3-?usp=drive_link"
+  },
+  {
+    "id": "wipro",
+    "name": "Wipro",
+    "logo": "/logos/wipro.png",
+    "driveLink": "https://drive.google.com/drive/folders/1x6McgyGlRF1uYpcG51adsD7W0db8uOee?usp=drive_link"
+  },
+  {
+    "id": "zenpact",
+    "name": "Zenpact",
+    "logo": "/logos/zenpact.png",
+    "driveLink": "https://drive.google.com/drive/folders/1_K_s6JPC7kRmsADozqbOdI9ORfvi4nZw?usp=drive_link"
+  },
+  {
+    "id": "zenq",
+    "name": "ZenQ",
+    "logo": "/logos/zenq.png",
+    "driveLink": "https://drive.google.com/drive/folders/1pj5wPDJ3mE8MJNdLVfYJPfLgMPjpdlAy?usp=drive_link"
+  },
+  {
+    "id": "zoho",
+    "name": "Zoho",
+    "logo": "/logos/zoho.png",
+    "driveLink": "https://drive.google.com/drive/folders/1JtqXR8yyGB1WFhCzY89y8ZOmYz27KrHe?usp=drive_link"
+  }
+]
