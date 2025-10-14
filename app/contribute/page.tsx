@@ -77,7 +77,7 @@ export default function ContributePage() {
                 </Label>
                 <Textarea id="desc" name="desc" placeholder="Briefly describe the resources (e.g., aptitude tests, coding questions, interview tips)..." rows={5} className="resize-none" />
               </div>
-              <Button type="submit" disabled={loading} className="w-full h-12 text-lg font-medium transition-all hover:shadow-lg">
+              <Button type="submit" disabled={loading} className="w-full h-10 text-base font-medium transition-all">
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -85,7 +85,7 @@ export default function ContributePage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4" />
                     Submit Contribution
                   </div>
                 )}

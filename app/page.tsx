@@ -1,7 +1,8 @@
 import { Suspense } from "react"
 import { CompanyGrid } from "@/components/company-grid"
 import { getCompanies } from "@/lib/companies"
-import { GraduationCap } from "lucide-react"
+import { GraduationCap, Search, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default async function HomePage() {
   const companies = await getCompanies()
@@ -19,14 +20,20 @@ export default async function HomePage() {
           Browse curated, student-contributed resources for top companies. Simple, free, and always growing.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 sm:pt-4 px-4 sm:px-0">
-          <a href="#companies" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto">
-            Browse companies
-            <span className="sr-only">{"Jump to companies"}</span>
-          </a>
-          <a href="/contribute" className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors w-full sm:w-auto">
-            Contribute resources
-            <span className="sr-only">{"Go to contribute page"}</span>
-          </a>
+          <Button asChild className="w-full sm:w-auto">
+            <a href="#companies">
+              <Search className="h-4 w-4" />
+              Browse companies
+              <span className="sr-only">{"Jump to companies"}</span>
+            </a>
+          </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <a href="/contribute">
+              <Plus className="h-4 w-4" />
+              Contribute resources
+              <span className="sr-only">{"Go to contribute page"}</span>
+            </a>
+          </Button>
         </div>
       </section>
 
