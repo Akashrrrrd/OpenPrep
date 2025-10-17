@@ -13,6 +13,22 @@ export const metadata: Metadata = {
   title: "OpenPrep",
   description:
     "OpenPrep is a free, student-friendly hub for company-wise placement preparation resources with verified Google Drive links.",
+  icons: {
+    icon: [
+      {
+        url: "/logos/favicon-white.svg",
+        sizes: "16x16",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/logos/favicon-white.svg",
+        sizes: "32x32",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/logos/favicon-white.svg",
+    apple: "/logos/favicon-white.svg",
+  },
 }
 
 export default function RootLayout({

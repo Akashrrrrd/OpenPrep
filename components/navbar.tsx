@@ -41,7 +41,7 @@ export function Navbar() {
             </li>
             <li>
               <Link className="text-sm hover:underline underline-offset-4" href="/study-planner">
-                Study Planner
+                Planner
               </Link>
             </li>
             <li>
@@ -56,7 +56,7 @@ export function Navbar() {
             </li>
             <li>
               <Link className="text-sm hover:underline underline-offset-4" href="/experiences/share">
-                Share Experience
+                Share
               </Link>
             </li>
             <li>
@@ -72,12 +72,6 @@ export function Navbar() {
           </ul>
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/contribute" className="hidden sm:block">
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Contribute
-            </Button>
-          </Link>
           <Button
             variant="ghost"
             size="default"
@@ -112,7 +106,7 @@ export function Navbar() {
                   className="text-lg font-medium hover:underline underline-offset-4"
                   onClick={() => setOpen(false)}
                 >
-                  Study Planner
+                  Planner
                 </Link>
                 <Link
                   href="/forum"
@@ -123,10 +117,9 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/contribute"
-                  className="flex items-center gap-2 text-lg font-medium hover:underline underline-offset-4"
+                  className="text-lg font-medium hover:underline underline-offset-4"
                   onClick={() => setOpen(false)}
                 >
-                  <Plus className="h-5 w-5" />
                   Contribute
                 </Link>
                 <Link
@@ -134,7 +127,7 @@ export function Navbar() {
                   className="text-lg font-medium hover:underline underline-offset-4"
                   onClick={() => setOpen(false)}
                 >
-                  Share Experience
+                  Share
                 </Link>
                 <a
                   href="https://github.com/Akashrrrrd/OpenPrep"

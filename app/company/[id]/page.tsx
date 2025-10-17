@@ -50,7 +50,7 @@ export default async function CompanyPage({ params }: Params) {
             <h2 className="text-xl sm:text-2xl font-bold">Recent Interview Experiences</h2>
             <p className="text-muted-foreground text-sm sm:text-base">Real experiences from students who interviewed at {company.name}</p>
           </div>
-          <Link href={`/contribute?company=${params.id}`} className="w-full sm:w-auto">
+          <Link href={`/experiences/share?company=${params.id}`} className="w-full sm:w-auto">
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
               Share Your Experience
             </Button>
@@ -75,7 +75,7 @@ export default async function CompanyPage({ params }: Params) {
               <p className="text-muted-foreground mb-4 max-w-sm">
                 Be the first to share your interview experience with {company.name} and help fellow students prepare better.
               </p>
-              <Link href={`/contribute?company=${params.id}`}>
+              <Link href={`/experiences/share?company=${params.id}`}>
                 <Button>Share Your Experience</Button>
               </Link>
             </CardContent>
