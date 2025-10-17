@@ -55,6 +55,11 @@ export function Navbar() {
               </Link>
             </li>
             <li>
+              <Link className="text-sm hover:underline underline-offset-4" href="/experiences/share">
+                Share Experience
+              </Link>
+            </li>
+            <li>
               <a
                 className="text-sm hover:underline underline-offset-4"
                 href="https://github.com/Akashrrrrd/OpenPrep"
@@ -123,6 +128,13 @@ export function Navbar() {
                 >
                   <Plus className="h-5 w-5" />
                   Contribute
+                </Link>
+                <Link
+                  href="/experiences/share"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                  onClick={() => setOpen(false)}
+                >
+                  Share Experience
                 </Link>
                 <a
                   href="https://github.com/Akashrrrrd/OpenPrep"

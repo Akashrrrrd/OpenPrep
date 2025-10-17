@@ -1,4 +1,5 @@
-import questions from "../src/data/questions.json"
+import connectDB from './mongodb'
+import Question, { IQuestion, IAnswer } from './models/Question'
 
 export interface Answer {
   id: string
@@ -30,38 +31,253 @@ export interface Question {
   updatedAt: string
 }
 
+function formatQuestion(q: IQuestion): Question {
+  return {
+    id: q.id,
+    title: q.title,
+    content: q.content,
+    author: q.author,
+    authorReputation: q.authorReputation,
+    tags: [...q.tags],
+    difficulty: q.difficulty,
+    upvotes: q.upvotes,
+    downvotes: q.downvotes,
+    views: q.views,
+    answers: q.answers.map(formatAnswer),
+    hasAcceptedAnswer: q.hasAcceptedAnswer,
+    createdAt: q.createdAt?.toISOString() || new Date().toISOString(),
+    updatedAt: q.updatedAt?.toISOString() || new Date().toISOString()
+  }
+}
+
+function formatAnswer(a: IAnswer): Answer {
+  return {
+    id: a.id,
+    content: a.content,
+    author: a.author,
+    authorReputation: a.authorReputation,
+    upvotes: a.upvotes,
+    downvotes: a.downvotes,
+    isAccepted: a.isAccepted,
+    expertVerified: a.expertVerified,
+    createdAt: a.createdAt?.toISOString() || new Date().toISOString(),
+    updatedAt: a.updatedAt?.toISOString() || new Date().toISOString()
+  }
+}
+
 export async function getAllQuestions(): Promise<Question[]> {
-  return questions as Question[]
+  try {
+    await connectDB()
+    const questions = await Question.find({})
+      .sort({ createdAt: -1 })
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error fetching all questions:', error)
+    return []
+  }
 }
 
 export async function getQuestionsByTag(tag: string): Promise<Question[]> {
-  return questions.filter(q => q.tags.includes(tag)) as Question[]
+  try {
+    await connectDB()
+    const questions = await Question.find({ tags: tag })
+      .sort({ createdAt: -1 })
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error fetching questions by tag:', error)
+    return []
+  }
 }
 
 export async function getQuestionById(id: string): Promise<Question | null> {
-  const question = questions.find(q => q.id === id) as Question | undefined
-  return question || null
+  try {
+    await connectDB()
+    const question = await Question.findOneAndUpdate(
+      { id },
+      { $inc: { views: 1 } }, // Increment view count
+      { new: true }
+    ).lean()
+    
+    if (!question) return null
+    
+    return formatQuestion(question)
+  } catch (error) {
+    console.error('Error fetching question by id:', error)
+    return null
+  }
 }
 
 export async function getPopularQuestions(limit: number = 10): Promise<Question[]> {
-  return questions
-    .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
-    .slice(0, limit) as Question[]
+  try {
+    await connectDB()
+    const questions = await Question.find({})
+      .sort({ upvotes: -1, createdAt: -1 })
+      .limit(limit)
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error fetching popular questions:', error)
+    return []
+  }
 }
 
 export async function getRecentQuestions(limit: number = 10): Promise<Question[]> {
-  return questions
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, limit) as Question[]
+  try {
+    await connectDB()
+    const questions = await Question.find({})
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error fetching recent questions:', error)
+    return []
+  }
+}
+
+export async function getUnansweredQuestions(limit: number = 10): Promise<Question[]> {
+  try {
+    await connectDB()
+    const questions = await Question.find({ hasAcceptedAnswer: false })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error fetching unanswered questions:', error)
+    return []
+  }
 }
 
 export async function searchQuestions(query: string): Promise<Question[]> {
-  const searchTerm = query.toLowerCase()
-  return questions.filter(q => 
-    q.title.toLowerCase().includes(searchTerm) ||
-    q.content.toLowerCase().includes(searchTerm) ||
-    q.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-  ) as Question[]
+  try {
+    await connectDB()
+    const questions = await Question.find({
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { content: { $regex: query, $options: 'i' } },
+        { tags: { $in: [new RegExp(query, 'i')] } }
+      ]
+    })
+      .sort({ upvotes: -1, createdAt: -1 })
+      .lean()
+    
+    return questions.map(formatQuestion)
+  } catch (error) {
+    console.error('Error searching questions:', error)
+    return []
+  }
+}
+
+export async function createQuestion(questionData: Omit<Question, 'answers' | 'hasAcceptedAnswer' | 'views' | 'upvotes' | 'downvotes' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
+  try {
+    await connectDB()
+    const question = new Question({
+      ...questionData,
+      answers: [],
+      hasAcceptedAnswer: false,
+      views: 0,
+      upvotes: 0,
+      downvotes: 0
+    })
+    const savedQuestion = await question.save()
+    
+    return formatQuestion(savedQuestion)
+  } catch (error) {
+    console.error('Error creating question:', error)
+    return null
+  }
+}
+
+export async function addAnswer(questionId: string, answerData: Omit<Answer, 'upvotes' | 'downvotes' | 'isAccepted' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
+  try {
+    await connectDB()
+    const newAnswer: IAnswer = {
+      ...answerData,
+      upvotes: 0,
+      downvotes: 0,
+      isAccepted: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+    
+    const question = await Question.findOneAndUpdate(
+      { id: questionId },
+      { 
+        $push: { answers: newAnswer },
+        $set: { updatedAt: new Date() }
+      },
+      { new: true, runValidators: true }
+    ).lean()
+    
+    if (!question) return null
+    
+    return formatQuestion(question)
+  } catch (error) {
+    console.error('Error adding answer:', error)
+    return null
+  }
+}
+
+export async function upvoteQuestion(id: string): Promise<boolean> {
+  try {
+    await connectDB()
+    const result = await Question.updateOne(
+      { id },
+      { $inc: { upvotes: 1 } }
+    )
+    return result.modifiedCount > 0
+  } catch (error) {
+    console.error('Error upvoting question:', error)
+    return false
+  }
+}
+
+export async function upvoteAnswer(questionId: string, answerId: string): Promise<boolean> {
+  try {
+    await connectDB()
+    const result = await Question.updateOne(
+      { id: questionId, 'answers.id': answerId },
+      { $inc: { 'answers.$.upvotes': 1 } }
+    )
+    return result.modifiedCount > 0
+  } catch (error) {
+    console.error('Error upvoting answer:', error)
+    return false
+  }
+}
+
+export async function acceptAnswer(questionId: string, answerId: string): Promise<boolean> {
+  try {
+    await connectDB()
+    // First, unaccept all answers for this question
+    await Question.updateOne(
+      { id: questionId },
+      { $set: { 'answers.$[].isAccepted': false } }
+    )
+    
+    // Then accept the specific answer
+    const result = await Question.updateOne(
+      { id: questionId, 'answers.id': answerId },
+      { 
+        $set: { 
+          'answers.$.isAccepted': true,
+          hasAcceptedAnswer: true
+        }
+      }
+    )
+    return result.modifiedCount > 0
+  } catch (error) {
+    console.error('Error accepting answer:', error)
+    return false
+  }
 }
 
 export function getDifficultyColor(difficulty: string) {

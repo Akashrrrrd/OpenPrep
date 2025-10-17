@@ -31,10 +31,16 @@ function formatExperience(exp: IInterviewExperience): InterviewExperience {
     companyId: exp.companyId,
     role: exp.role,
     date: exp.date.toISOString(),
-    rounds: exp.rounds,
+    rounds: exp.rounds.map(round => ({
+      type: round.type,
+      duration: round.duration,
+      questions: [...round.questions],
+      difficulty: round.difficulty,
+      tips: [...round.tips]
+    })),
     overallDifficulty: exp.overallDifficulty,
     outcome: exp.outcome,
-    tips: exp.tips,
+    tips: [...exp.tips],
     anonymous: exp.anonymous,
     verified: exp.verified,
     upvotes: exp.upvotes,

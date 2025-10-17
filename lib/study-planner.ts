@@ -1,3 +1,6 @@
+import connectDB from './mongodb'
+import StudyPlan, { IStudyPlan, ITask, IDailyTask } from './models/StudyPlan'
+
 export interface StudyPlan {
   id: string
   targetCompanies: string[]
@@ -282,6 +285,121 @@ function generateFinalPrepTasks(
       completed: false
     }
   ]
+}
+
+function formatStudyPlan(plan: IStudyPlan): StudyPlan {
+  return {
+    id: plan.id,
+    targetCompanies: [...plan.targetCompanies],
+    availableHoursPerDay: plan.availableHoursPerDay,
+    targetDate: plan.targetDate.toISOString(),
+    currentLevel: plan.currentLevel,
+    focusAreas: [...plan.focusAreas],
+    generatedPlan: plan.generatedPlan.map(day => ({
+      date: day.date.toISOString().split('T')[0],
+      tasks: day.tasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        type: task.type,
+        duration: task.duration,
+        priority: task.priority,
+        description: task.description,
+        resources: [...task.resources],
+        completed: task.completed
+      })),
+      totalHours: day.totalHours
+    })),
+    createdAt: plan.createdAt?.toISOString() || new Date().toISOString()
+  }
+}
+
+export async function saveStudyPlan(planData: StudyPlan): Promise<StudyPlan | null> {
+  try {
+    await connectDB()
+    const plan = new StudyPlan({
+      ...planData,
+      targetDate: new Date(planData.targetDate),
+      generatedPlan: planData.generatedPlan.map(day => ({
+        ...day,
+        date: new Date(day.date)
+      }))
+    })
+    const savedPlan = await plan.save()
+    
+    return formatStudyPlan(savedPlan)
+  } catch (error) {
+    console.error('Error saving study plan:', error)
+    return null
+  }
+}
+
+export async function getStudyPlan(id: string): Promise<StudyPlan | null> {
+  try {
+    await connectDB()
+    const plan = await StudyPlan.findOne({ id }).lean()
+    
+    if (!plan) return null
+    
+    return formatStudyPlan(plan)
+  } catch (error) {
+    console.error('Error fetching study plan:', error)
+    return null
+  }
+}
+
+export async function updateStudyPlan(id: string, updates: Partial<StudyPlan>): Promise<StudyPlan | null> {
+  try {
+    await connectDB()
+    const updateData = { ...updates }
+    if (updateData.targetDate) {
+      updateData.targetDate = new Date(updateData.targetDate) as any
+    }
+    if (updateData.generatedPlan) {
+      updateData.generatedPlan = updateData.generatedPlan.map(day => ({
+        ...day,
+        date: new Date(day.date)
+      })) as any
+    }
+    
+    const plan = await StudyPlan.findOneAndUpdate(
+      { id },
+      updateData,
+      { new: true, runValidators: true }
+    ).lean()
+    
+    if (!plan) return null
+    
+    return formatStudyPlan(plan)
+  } catch (error) {
+    console.error('Error updating study plan:', error)
+    return null
+  }
+}
+
+export async function deleteStudyPlan(id: string): Promise<boolean> {
+  try {
+    await connectDB()
+    const result = await StudyPlan.deleteOne({ id })
+    return result.deletedCount > 0
+  } catch (error) {
+    console.error('Error deleting study plan:', error)
+    return false
+  }
+}
+
+export async function getUserStudyPlans(userId?: string): Promise<StudyPlan[]> {
+  try {
+    await connectDB()
+    const query = userId ? { userId } : {}
+    const plans = await StudyPlan.find(query)
+      .sort({ createdAt: -1 })
+      .lean()
+    
+    return plans.map(formatStudyPlan)
+  } catch (error) {
+    console.error('Error fetching user study plans:', error)
+    return []
+  }
 }
 
 export function getStudyPlanProgress(plan: StudyPlan): {

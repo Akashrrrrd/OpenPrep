@@ -7,15 +7,324 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { generateStudyPlan, StudyPlan, getStudyPlanProgress } from "@/lib/study-planner"
-import { getCompanies } from "@/lib/companies"
 import { Calendar, Clock, Target, BookOpen, CheckCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { LoadingOverlay, ComponentLoading } from "@/components/loading"
+
+// Define types locally to avoid importing Mongoose models
+interface Task {
+  id: string
+  title: string
+  type: 'aptitude' | 'coding' | 'technical' | 'hr' | 'mock_test' | 'revision'
+  duration: number // in minutes
+  priority: 'high' | 'medium' | 'low'
+  description: string
+  resources: string[]
+  completed: boolean
+}
+
+interface DailyTask {
+  date: string
+  tasks: Task[]
+  totalHours: number
+}
+
+interface StudyPlan {
+  id: string
+  targetCompanies: string[]
+  availableHoursPerDay: number
+  targetDate: string
+  currentLevel: 'beginner' | 'intermediate' | 'advanced'
+  focusAreas: ('aptitude' | 'coding' | 'technical' | 'hr')[]
+  generatedPlan: DailyTask[]
+  createdAt: string
+}
+
+// Client-side study plan generation function
+function generateStudyPlan(
+  targetCompanies: string[],
+  availableHoursPerDay: number,
+  targetDate: string,
+  currentLevel: 'beginner' | 'intermediate' | 'advanced',
+  focusAreas: ('aptitude' | 'coding' | 'technical' | 'hr')[]
+): StudyPlan {
+  const startDate = new Date()
+  const endDate = new Date(targetDate)
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  
+  const dailyTasks: DailyTask[] = []
+  
+  // Generate tasks for each day
+  for (let i = 0; i < totalDays; i++) {
+    const currentDate = new Date(startDate)
+    currentDate.setDate(startDate.getDate() + i)
+    
+    const tasks = generateDailyTasks(
+      i,
+      totalDays,
+      availableHoursPerDay,
+      currentLevel,
+      focusAreas,
+      targetCompanies
+    )
+    
+    dailyTasks.push({
+      date: currentDate.toISOString().split('T')[0],
+      tasks,
+      totalHours: tasks.reduce((sum, task) => sum + task.duration / 60, 0)
+    })
+  }
+  
+  return {
+    id: `plan-${Date.now()}`,
+    targetCompanies,
+    availableHoursPerDay,
+    targetDate,
+    currentLevel,
+    focusAreas,
+    generatedPlan: dailyTasks,
+    createdAt: new Date().toISOString()
+  }
+}
+
+function generateDailyTasks(
+  dayIndex: number,
+  totalDays: number,
+  availableHours: number,
+  level: string,
+  focusAreas: string[],
+  targetCompanies: string[]
+): Task[] {
+  const tasks: Task[] = []
+  const availableMinutes = availableHours * 60
+  
+  // Phase-based approach
+  const phase1Days = Math.floor(totalDays * 0.6) // 60% foundation
+  const phase2Days = Math.floor(totalDays * 0.3) // 30% practice
+  
+  if (dayIndex < phase1Days) {
+    // Foundation Phase
+    tasks.push(...generateFoundationTasks(availableMinutes, level, focusAreas))
+  } else if (dayIndex < phase1Days + phase2Days) {
+    // Practice Phase
+    tasks.push(...generatePracticeTasks(availableMinutes, level, focusAreas, targetCompanies))
+  } else {
+    // Final Preparation Phase
+    tasks.push(...generateFinalPrepTasks(availableMinutes, targetCompanies))
+  }
+  
+  return tasks
+}
+
+function generateFoundationTasks(
+  availableMinutes: number,
+  level: string,
+  focusAreas: string[]
+): Task[] {
+  const tasks: Task[] = []
+  const timePerArea = Math.floor(availableMinutes / focusAreas.length)
+  
+  focusAreas.forEach((area, index) => {
+    switch (area) {
+      case 'aptitude':
+        tasks.push({
+          id: `task-${Date.now()}-${index}`,
+          title: 'Quantitative Aptitude Practice',
+          type: 'aptitude',
+          duration: Math.floor(timePerArea * 0.6),
+          priority: 'high',
+          description: level === 'beginner' 
+            ? 'Basic arithmetic, percentages, and simple interest'
+            : 'Advanced problems on time & work, profit & loss',
+          resources: [
+            'RS Aggarwal Quantitative Aptitude',
+            'IndiaBix Aptitude Questions',
+            'Previous year question papers'
+          ],
+          completed: false
+        })
+        
+        tasks.push({
+          id: `task-${Date.now()}-${index}-2`,
+          title: 'Logical Reasoning',
+          type: 'aptitude',
+          duration: Math.floor(timePerArea * 0.4),
+          priority: 'medium',
+          description: 'Pattern recognition, blood relations, coding-decoding',
+          resources: [
+            'RS Aggarwal Logical Reasoning',
+            'Logical reasoning practice tests'
+          ],
+          completed: false
+        })
+        break
+        
+      case 'coding':
+        tasks.push({
+          id: `task-${Date.now()}-${index}`,
+          title: 'Data Structures & Algorithms',
+          type: 'coding',
+          duration: timePerArea,
+          priority: 'high',
+          description: level === 'beginner'
+            ? 'Arrays, strings, basic sorting algorithms'
+            : 'Trees, graphs, dynamic programming',
+          resources: [
+            'LeetCode Easy/Medium problems',
+            'GeeksforGeeks DSA course',
+            'Coding interview preparation books'
+          ],
+          completed: false
+        })
+        break
+        
+      case 'technical':
+        tasks.push({
+          id: `task-${Date.now()}-${index}`,
+          title: 'Core CS Concepts',
+          type: 'technical',
+          duration: timePerArea,
+          priority: 'high',
+          description: 'OOP, DBMS, Operating Systems, Computer Networks',
+          resources: [
+            'GATE preparation books',
+            'InterviewBit technical questions',
+            'YouTube CS fundamentals videos'
+          ],
+          completed: false
+        })
+        break
+        
+      case 'hr':
+        tasks.push({
+          id: `task-${Date.now()}-${index}`,
+          title: 'HR Preparation',
+          type: 'hr',
+          duration: timePerArea,
+          priority: 'medium',
+          description: 'Common HR questions, company research, mock interviews',
+          resources: [
+            'Glassdoor interview experiences',
+            'Company websites and recent news',
+            'STAR method practice'
+          ],
+          completed: false
+        })
+        break
+    }
+  })
+  
+  return tasks
+}
+
+function generatePracticeTasks(
+  availableMinutes: number,
+  level: string,
+  focusAreas: string[],
+  targetCompanies: string[]
+): Task[] {
+  const tasks: Task[] = []
+  
+  // Mock tests take priority in practice phase
+  tasks.push({
+    id: `mock-${Date.now()}`,
+    title: 'Full Mock Test',
+    type: 'mock_test',
+    duration: 120, // 2 hours
+    priority: 'high',
+    description: `Complete mock test simulating ${targetCompanies[0] || 'target company'} pattern`,
+    resources: [
+      'Company-specific mock tests',
+      'Previous year question papers',
+      'Online test platforms'
+    ],
+    completed: false
+  })
+  
+  const remainingTime = availableMinutes - 120
+  
+  // Focus on weak areas identified from mock tests
+  tasks.push({
+    id: `practice-${Date.now()}`,
+    title: 'Targeted Practice',
+    type: 'coding',
+    duration: remainingTime,
+    priority: 'high',
+    description: 'Focus on areas where you scored low in mock tests',
+    resources: [
+      'Identified weak topics',
+      'Additional practice problems',
+      'Video explanations'
+    ],
+    completed: false
+  })
+  
+  return tasks
+}
+
+function generateFinalPrepTasks(
+  availableMinutes: number,
+  targetCompanies: string[]
+): Task[] {
+  return [
+    {
+      id: `final-${Date.now()}`,
+      title: 'Quick Revision',
+      type: 'revision',
+      duration: Math.floor(availableMinutes * 0.4),
+      priority: 'high',
+      description: 'Review formulas, important concepts, and notes',
+      resources: [
+        'Personal notes and cheat sheets',
+        'Formula cards',
+        'Quick revision videos'
+      ],
+      completed: false
+    },
+    {
+      id: `final-mock-${Date.now()}`,
+      title: 'Final Mock Test',
+      type: 'mock_test',
+      duration: Math.floor(availableMinutes * 0.6),
+      priority: 'high',
+      description: `Final practice test for ${targetCompanies.join(', ')}`,
+      resources: [
+        'Latest mock tests',
+        'Time management practice',
+        'Stress management techniques'
+      ],
+      completed: false
+    }
+  ]
+}
+
+function getStudyPlanProgress(plan: StudyPlan): {
+  completedTasks: number
+  totalTasks: number
+  completedHours: number
+  totalHours: number
+  progressPercentage: number
+} {
+  const allTasks = plan.generatedPlan.flatMap(day => day.tasks)
+  const completedTasks = allTasks.filter(task => task.completed)
+  
+  const totalHours = allTasks.reduce((sum, task) => sum + task.duration / 60, 0)
+  const completedHours = completedTasks.reduce((sum, task) => sum + task.duration / 60, 0)
+  
+  return {
+    completedTasks: completedTasks.length,
+    totalTasks: allTasks.length,
+    completedHours,
+    totalHours,
+    progressPercentage: Math.round((completedTasks.length / allTasks.length) * 100)
+  }
+}
 
 export default function StudyPlannerPage() {
   const [step, setStep] = useState<'form' | 'plan'>('form')
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     targetCompanies: [] as string[],
     availableHoursPerDay: 4,
@@ -33,11 +342,13 @@ export default function StudyPlannerPage() {
     { id: 'capgemini', name: 'Capgemini' }
   ]
 
-  const handleGeneratePlan = () => {
+  const handleGeneratePlan = async () => {
     if (formData.targetCompanies.length === 0 || !formData.targetDate) {
       alert('Please select at least one company and target date')
       return
     }
+
+    setLoading(true)
 
     const plan = generateStudyPlan(
       formData.targetCompanies,
@@ -47,11 +358,37 @@ export default function StudyPlannerPage() {
       formData.focusAreas
     )
     
-    setStudyPlan(plan)
-    setStep('plan')
+    // Save to database
+    try {
+      const response = await fetch('/api/study-plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(plan),
+      })
+      
+      if (response.ok) {
+        const savedPlan = await response.json()
+        setStudyPlan(savedPlan)
+        setStep('plan')
+      } else {
+        console.error('Failed to save study plan')
+        // Still show the plan even if saving fails
+        setStudyPlan(plan)
+        setStep('plan')
+      }
+    } catch (error) {
+      console.error('Error saving study plan:', error)
+      // Still show the plan even if saving fails
+      setStudyPlan(plan)
+      setStep('plan')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const toggleTaskCompletion = (dayIndex: number, taskIndex: number) => {
+  const toggleTaskCompletion = async (dayIndex: number, taskIndex: number) => {
     if (!studyPlan) return
     
     const updatedPlan = { ...studyPlan }
@@ -59,6 +396,19 @@ export default function StudyPlannerPage() {
       !updatedPlan.generatedPlan[dayIndex].tasks[taskIndex].completed
     
     setStudyPlan(updatedPlan)
+    
+    // Save to database
+    try {
+      await fetch(`/api/study-plans/${studyPlan.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedPlan),
+      })
+    } catch (error) {
+      console.error('Error updating study plan:', error)
+    }
   }
 
   const getTaskTypeIcon = (type: string) => {
@@ -229,7 +579,7 @@ export default function StudyPlannerPage() {
                       <span className={`text-sm flex-1 ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
                         {task.title}
                       </span>
-                      <Badge className={getPriorityColor(task.priority)} variant="outline" size="sm">
+                      <Badge className={getPriorityColor(task.priority)} variant="outline">
                         {task.priority}
                       </Badge>
                       <span className="text-xs text-muted-foreground">{task.duration}min</span>
@@ -256,8 +606,10 @@ export default function StudyPlannerPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10">
-      <Card>
+    <>
+      <LoadingOverlay message="Generating your personalized study plan..." isVisible={loading} />
+      <div className="mx-auto w-full max-w-2xl px-4 py-10">
+        <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Your Study Plan</CardTitle>
           <p className="text-muted-foreground">
@@ -393,7 +745,8 @@ export default function StudyPlannerPage() {
             Generate My Study Plan
           </Button>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   )
 }
