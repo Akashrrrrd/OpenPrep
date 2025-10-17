@@ -1,0 +1,369 @@
+"use client"
+
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getAllQuestions, getPopularQuestions, getRecentQuestions, Question, getDifficultyColor, getTagColor } from "@/lib/forum"
+import { Search, MessageSquare, ThumbsUp, Eye, CheckCircle, Star, Clock, TrendingUp } from "lucide-react"
+import Link from "next/link"
+
+// Mock data - in real app, this would come from API
+const mockQuestions: Question[] = [
+  {
+    "id": "q001",
+    "title": "How to approach TCS aptitude test preparation?",
+    "content": "I'm appearing for TCS placement drive next month. Can someone guide me on how to prepare for their aptitude test? What topics should I focus on and what's the difficulty level?",
+    "author": "student_2024",
+    "authorReputation": 45,
+    "tags": ["tcs", "aptitude", "placement", "preparation"],
+    "difficulty": "easy",
+    "upvotes": 23,
+    "downvotes": 2,
+    "views": 156,
+    "hasAcceptedAnswer": true,
+    "createdAt": "2024-10-12T10:30:00Z",
+    "updatedAt": "2024-10-12T10:30:00Z",
+    "answers": []
+  },
+  {
+    "id": "q002",
+    "title": "Best data structures to focus on for coding interviews?",
+    "content": "I have coding rounds coming up for Infosys, Wipro, and Accenture. Which data structures should I prioritize? I have limited time (3 weeks) and want to focus on the most important ones.",
+    "author": "coder_prep",
+    "authorReputation": 78,
+    "tags": ["coding", "data-structures", "interview", "infosys", "wipro", "accenture"],
+    "difficulty": "medium",
+    "upvotes": 31,
+    "downvotes": 3,
+    "views": 234,
+    "hasAcceptedAnswer": true,
+    "createdAt": "2024-10-10T09:45:00Z",
+    "updatedAt": "2024-10-10T09:45:00Z",
+    "answers": []
+  },
+  {
+    "id": "q003",
+    "title": "Common HR questions for fresher interviews?",
+    "content": "What are the most common HR questions asked in campus placements? I'm particularly nervous about behavioral questions. Any tips on how to structure answers?",
+    "author": "nervous_fresher",
+    "authorReputation": 12,
+    "tags": ["hr", "interview", "behavioral", "fresher", "campus-placement"],
+    "difficulty": "easy",
+    "upvotes": 19,
+    "downvotes": 1,
+    "views": 189,
+    "hasAcceptedAnswer": false,
+    "createdAt": "2024-10-08T16:20:00Z",
+    "updatedAt": "2024-10-08T16:20:00Z",
+    "answers": []
+  },
+  {
+    "id": "q004",
+    "title": "Difference between SQL JOIN types with examples?",
+    "content": "I keep getting confused between different types of JOINs in SQL. Can someone explain INNER, LEFT, RIGHT, and FULL OUTER JOIN with simple examples? This comes up frequently in technical interviews.",
+    "author": "sql_learner",
+    "authorReputation": 34,
+    "tags": ["sql", "database", "joins", "technical", "interview"],
+    "difficulty": "medium",
+    "upvotes": 27,
+    "downvotes": 2,
+    "views": 178,
+    "hasAcceptedAnswer": true,
+    "createdAt": "2024-10-05T11:30:00Z",
+    "updatedAt": "2024-10-05T11:30:00Z",
+    "answers": []
+  },
+  {
+    "id": "q005",
+    "title": "How to explain projects effectively in technical interviews?",
+    "content": "I have done 2-3 projects but I struggle to explain them clearly during interviews. Interviewers often ask deep technical questions about implementation details. How should I structure my project explanations?",
+    "author": "project_confused",
+    "authorReputation": 23,
+    "tags": ["projects", "technical-interview", "explanation", "presentation"],
+    "difficulty": "medium",
+    "upvotes": 22,
+    "downvotes": 0,
+    "views": 145,
+    "hasAcceptedAnswer": false,
+    "createdAt": "2024-10-03T14:20:00Z",
+    "updatedAt": "2024-10-03T14:20:00Z",
+    "answers": []
+  }
+]
+
+export default function ForumPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+
+  // Get all unique tags
+  const allTags = useMemo(() => {
+    const tags = new Set<string>()
+    mockQuestions.forEach(q => q.tags.forEach(tag => tags.add(tag)))
+    return Array.from(tags).sort()
+  }, [])
+
+  // Filter questions based on search and tag
+  const filteredQuestions = useMemo(() => {
+    let filtered = mockQuestions
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(query) ||
+        q.content.toLowerCase().includes(query) ||
+        q.tags.some(tag => tag.toLowerCase().includes(query))
+      )
+    }
+
+    if (selectedTag) {
+      filtered = filtered.filter(q => q.tags.includes(selectedTag))
+    }
+
+    return filtered
+  }, [searchQuery, selectedTag])
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
+  const getReputationBadge = (reputation: number) => {
+    if (reputation >= 1000) return { text: 'Expert', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' }
+    if (reputation >= 500) return { text: 'Advanced', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' }
+    if (reputation >= 100) return { text: 'Intermediate', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' }
+    return { text: 'Beginner', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' }
+  }
+
+  const QuestionCard = ({ question }: { question: Question }) => {
+    const repBadge = getReputationBadge(question.authorReputation)
+    
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {/* Question Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <Link href={`/forum/question/${question.id}`} className="hover:text-primary">
+                  <h3 className="text-lg font-semibold leading-tight hover:underline">
+                    {question.title}
+                  </h3>
+                </Link>
+                <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
+                  {question.content}
+                </p>
+              </div>
+              {question.hasAcceptedAnswer && (
+                <div className="flex items-center gap-1 text-green-600 text-sm">
+                  <CheckCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Solved</span>
+                </div>
+              )}
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2">
+              {question.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  className={`${getTagColor(tag)} cursor-pointer hover:opacity-80`}
+                  variant="outline"
+                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+              <Badge className={getDifficultyColor(question.difficulty)} variant="outline">
+                {question.difficulty}
+              </Badge>
+            </div>
+
+            {/* Question Stats */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <ThumbsUp className="h-4 w-4" />
+                  <span>{question.upvotes - question.downvotes}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>{question.answers.length}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  <span>{question.views}</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <Badge className={repBadge.color} variant="outline">
+                  {repBadge.text}
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <span className="truncate">by {question.author}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="text-xs">{formatDate(question.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Q&A Forum</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 sm:px-0">
+          Get help from the community. Ask questions, share knowledge, and learn from experienced students and professionals.
+        </p>
+      </div>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search questions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button asChild>
+              <Link href="/forum/ask">Ask Question</Link>
+            </Button>
+          </div>
+
+          {/* Popular Tags */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Popular Tags:</h4>
+            <div className="flex flex-wrap gap-2">
+              {allTags.slice(0, 12).map((tag) => (
+                <Badge
+                  key={tag}
+                  className={`cursor-pointer hover:opacity-80 ${
+                    selectedTag === tag 
+                      ? 'bg-primary text-primary-foreground' 
+                      : getTagColor(tag)
+                  }`}
+                  variant="outline"
+                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {selectedTag && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedTag(null)}
+                  className="h-6 px-2 text-xs"
+                >
+                  Clear filter
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Questions Tabs */}
+      <Tabs defaultValue="recent" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="recent" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Recent</span>
+            <span className="sm:hidden">New</span>
+          </TabsTrigger>
+          <TabsTrigger value="popular" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Popular</span>
+            <span className="sm:hidden">Hot</span>
+          </TabsTrigger>
+          <TabsTrigger value="unanswered" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Unanswered</span>
+            <span className="sm:hidden">Open</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="recent" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Recent Questions</h2>
+            <span className="text-sm text-muted-foreground">
+              {filteredQuestions.length} questions
+            </span>
+          </div>
+          
+          {filteredQuestions.length > 0 ? (
+            <div className="space-y-4">
+              {filteredQuestions
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .map((question) => (
+                  <QuestionCard key={question.id} question={question} />
+                ))}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <Search className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="font-semibold mb-2">No questions found</h3>
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery || selectedTag 
+                    ? "Try adjusting your search or filters" 
+                    : "Be the first to ask a question!"
+                  }
+                </p>
+                <Button asChild>
+                  <Link href="/forum/ask">Ask Question</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="popular" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Popular Questions</h2>
+            <span className="text-sm text-muted-foreground">Most upvoted</span>
+          </div>
+          
+          <div className="space-y-4">
+            {filteredQuestions
+              .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
+              .map((question) => (
+                <QuestionCard key={question.id} question={question} />
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="unanswered" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Unanswered Questions</h2>
+            <span className="text-sm text-muted-foreground">Need your help!</span>
+          </div>
+          
+          <div className="space-y-4">
+            {filteredQuestions
+              .filter(q => !q.hasAcceptedAnswer)
+              .map((question) => (
+                <QuestionCard key={question.id} question={question} />
+              ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

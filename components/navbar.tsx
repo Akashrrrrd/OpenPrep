@@ -28,8 +28,8 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 font-semibold tracking-tight hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1"
         >
-          <img src="/logos/logo.png" alt="OpenPrep Logo" className="h-10 w-10 dark:invert" />
-          <span className="text-xl">OpenPrep</span>
+          <img src="/logos/logo.png" alt="OpenPrep Logo" className="h-8 w-8 sm:h-10 sm:w-10 dark:invert" />
+          <span className="text-lg sm:text-xl">OpenPrep</span>
           <span className="sr-only">{"OpenPrep Home"}</span>
         </Link>
         <nav aria-label="Main Navigation">
@@ -37,6 +37,16 @@ export function Navbar() {
             <li>
               <Link className="text-sm hover:underline underline-offset-4" href="/">
                 Home
+              </Link>
+            </li>
+            <li>
+              <Link className="text-sm hover:underline underline-offset-4" href="/study-planner">
+                Study Planner
+              </Link>
+            </li>
+            <li>
+              <Link className="text-sm hover:underline underline-offset-4" href="/forum">
+                Forum
               </Link>
             </li>
             <li>
@@ -91,6 +101,20 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                 >
                   Home
+                </Link>
+                <Link
+                  href="/study-planner"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                  onClick={() => setOpen(false)}
+                >
+                  Study Planner
+                </Link>
+                <Link
+                  href="/forum"
+                  className="text-lg font-medium hover:underline underline-offset-4"
+                  onClick={() => setOpen(false)}
+                >
+                  Forum
                 </Link>
                 <Link
                   href="/contribute"

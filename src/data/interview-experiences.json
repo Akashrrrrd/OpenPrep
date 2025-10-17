@@ -1,0 +1,294 @@
+[
+  {
+    "id": "tcs-001",
+    "companyId": "tcs",
+    "role": "Software Engineer",
+    "date": "2024-10-10",
+    "rounds": [
+      {
+        "type": "aptitude",
+        "duration": 90,
+        "questions": [
+          "Quantitative aptitude questions on profit/loss, time & work",
+          "Logical reasoning - pattern recognition, blood relations",
+          "Verbal ability - reading comprehension, grammar"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Focus on time management - 90 minutes for 80 questions",
+          "Practice TCS previous year papers extensively",
+          "Negative marking exists, so avoid wild guessing"
+        ]
+      },
+      {
+        "type": "coding",
+        "duration": 60,
+        "questions": [
+          "Find the second largest element in an array",
+          "Check if a string is palindrome (ignore spaces and case)"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Code in any language - C, C++, Java, Python allowed",
+          "Focus on clean, readable code with proper variable names",
+          "Test with edge cases before submitting"
+        ]
+      },
+      {
+        "type": "technical",
+        "duration": 30,
+        "questions": [
+          "Explain OOP concepts with examples",
+          "Difference between SQL and NoSQL databases",
+          "What is polymorphism? Give real-world example",
+          "Explain your final year project in detail"
+        ],
+        "difficulty": 3,
+        "tips": [
+          "Be thorough with basics - OOP, DBMS, OS concepts",
+          "Prepare to explain your projects in detail",
+          "Practice explaining technical concepts in simple terms"
+        ]
+      },
+      {
+        "type": "hr",
+        "duration": 15,
+        "questions": [
+          "Tell me about yourself",
+          "Why TCS?",
+          "Where do you see yourself in 5 years?",
+          "Are you willing to relocate?"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Research TCS values and recent news",
+          "Prepare STAR format answers for behavioral questions",
+          "Be honest about relocation preferences"
+        ]
+      }
+    ],
+    "overallDifficulty": 2,
+    "outcome": "selected",
+    "tips": [
+      "TCS focuses heavily on aptitude - practice daily for 2-3 months",
+      "Be confident during technical round - they test depth of knowledge",
+      "Dress formally and maintain good body language throughout"
+    ],
+    "anonymous": false,
+    "verified": true,
+    "upvotes": 24,
+    "helpful": 18
+  },
+  {
+    "id": "infosys-001",
+    "companyId": "infosys",
+    "role": "Systems Engineer",
+    "date": "2024-10-05",
+    "rounds": [
+      {
+        "type": "aptitude",
+        "duration": 95,
+        "questions": [
+          "Quantitative aptitude - heavy focus on percentages and ratios",
+          "Logical reasoning - puzzles and analytical reasoning",
+          "Verbal ability - sentence correction and reading comprehension"
+        ],
+        "difficulty": 3,
+        "tips": [
+          "Infosys aptitude is slightly tougher than TCS",
+          "Time management is crucial - don't get stuck on difficult questions",
+          "Practice Infosys previous papers - pattern is consistent"
+        ]
+      },
+      {
+        "type": "coding",
+        "duration": 45,
+        "questions": [
+          "Find missing number in array of 1 to n",
+          "Reverse words in a sentence while maintaining word order"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Focus on optimal solutions - they check time complexity",
+          "Write clean code with proper comments",
+          "Test thoroughly before submission"
+        ]
+      },
+      {
+        "type": "technical",
+        "duration": 25,
+        "questions": [
+          "Explain normalization in databases",
+          "What are design patterns? Explain Singleton",
+          "Difference between abstract class and interface",
+          "How does garbage collection work in Java?"
+        ],
+        "difficulty": 3,
+        "tips": [
+          "Strong focus on Java and database concepts",
+          "Prepare design patterns thoroughly",
+          "Be ready to write code snippets during explanation"
+        ]
+      },
+      {
+        "type": "hr",
+        "duration": 20,
+        "questions": [
+          "Why should we hire you?",
+          "What do you know about Infosys?",
+          "Describe a challenging situation you faced",
+          "Are you open to learning new technologies?"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Research Infosys recent acquisitions and digital transformation",
+          "Emphasize learning agility and adaptability",
+          "Prepare examples that show problem-solving skills"
+        ]
+      }
+    ],
+    "overallDifficulty": 3,
+    "outcome": "selected",
+    "tips": [
+      "Infosys values technical depth - don't just memorize, understand concepts",
+      "Practice coding problems daily - focus on clean, efficient solutions",
+      "Show enthusiasm for learning new technologies during HR round"
+    ],
+    "anonymous": true,
+    "verified": true,
+    "upvotes": 31,
+    "helpful": 25
+  },
+  {
+    "id": "wipro-001",
+    "companyId": "wipro",
+    "role": "Project Engineer",
+    "date": "2024-09-28",
+    "rounds": [
+      {
+        "type": "aptitude",
+        "duration": 75,
+        "questions": [
+          "Quantitative aptitude - focus on speed and accuracy",
+          "Logical reasoning - pattern matching and series completion",
+          "Verbal ability - grammar and vocabulary heavy"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Wipro aptitude is moderate difficulty",
+          "Strong English skills give significant advantage",
+          "Practice mental math for faster calculation"
+        ]
+      },
+      {
+        "type": "technical",
+        "duration": 35,
+        "questions": [
+          "Explain the software development lifecycle",
+          "What is the difference between HTTP and HTTPS?",
+          "Write a program to find factorial of a number",
+          "Explain your favorite programming language features"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Be strong with one programming language",
+          "Understand basic networking and web concepts",
+          "Practice writing code on paper/whiteboard"
+        ]
+      },
+      {
+        "type": "hr",
+        "duration": 25,
+        "questions": [
+          "Introduce yourself briefly",
+          "Why Wipro over other companies?",
+          "What are your strengths and weaknesses?",
+          "How do you handle pressure and deadlines?"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Research Wipro's recent projects and initiatives",
+          "Give specific examples for strengths",
+          "Be honest about weaknesses but show improvement efforts"
+        ]
+      }
+    ],
+    "overallDifficulty": 2,
+    "outcome": "waiting",
+    "tips": [
+      "Wipro process is relatively straightforward",
+      "Focus on fundamentals rather than advanced topics",
+      "Communication skills are highly valued"
+    ],
+    "anonymous": false,
+    "verified": false,
+    "upvotes": 12,
+    "helpful": 8
+  },
+  {
+    "id": "accenture-001",
+    "companyId": "accenture",
+    "role": "Associate Software Engineer",
+    "date": "2024-10-15",
+    "rounds": [
+      {
+        "type": "aptitude",
+        "duration": 90,
+        "questions": [
+          "Cognitive ability test - abstract reasoning",
+          "Technical assessment - basic programming concepts",
+          "Communication assessment - email writing and comprehension"
+        ],
+        "difficulty": 2,
+        "tips": [
+          "Accenture uses unique test format - practice their sample tests",
+          "Communication skills are heavily weighted",
+          "Abstract reasoning requires practice - use online resources"
+        ]
+      },
+      {
+        "type": "technical",
+        "duration": 45,
+        "questions": [
+          "Explain cloud computing and its benefits",
+          "What is Agile methodology?",
+          "Basic SQL queries - joins and subqueries",
+          "Discuss a technology trend you're interested in"
+        ],
+        "difficulty": 3,
+        "tips": [
+          "Stay updated with latest technology trends",
+          "Understand business applications of technology",
+          "Practice explaining technical concepts to non-technical audience"
+        ]
+      },
+      {
+        "type": "hr",
+        "duration": 30,
+        "questions": [
+          "Why consulting? Why Accenture?",
+          "How do you adapt to changing requirements?",
+          "Describe a time you worked in a team",
+          "Are you comfortable with client-facing roles?"
+        ],
+        "difficulty": 3,
+        "tips": [
+          "Understand consulting business model",
+          "Emphasize adaptability and client service orientation",
+          "Prepare examples showing teamwork and leadership"
+        ]
+      }
+    ],
+    "overallDifficulty": 3,
+    "outcome": "rejected",
+    "tips": [
+      "Accenture looks for well-rounded candidates, not just technical skills",
+      "Communication and presentation skills are crucial",
+      "Show interest in business and consulting aspects"
+    ],
+    "anonymous": true,
+    "verified": true,
+    "upvotes": 19,
+    "helpful": 14
+  }
+]

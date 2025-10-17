@@ -29,19 +29,19 @@ export default function ContributePage() {
       <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 shadow-lg">
         <CardHeader className="text-center pb-6">
           <div className="flex justify-center mb-4">
-            <FileText className="h-12 w-12 text-primary" />
+            <FileText className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Contribute Resources</CardTitle>
-          <p className="text-muted-foreground mt-2">Help students by sharing placement preparation materials</p>
+          <CardTitle className="text-xl sm:text-2xl font-bold">Contribute Resources</CardTitle>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base px-4 sm:px-0">Help students by sharing placement preparation materials</p>
         </CardHeader>
         <CardContent className="space-y-8">
           {submitted ? (
             <div className="text-center space-y-4 py-8">
               <div className="flex justify-center">
-                <Send className="h-16 w-16 text-green-500" />
+                <Send className="h-12 w-12 sm:h-16 sm:w-16 text-green-500" />
               </div>
-              <p className="text-xl font-medium text-green-600 dark:text-green-400">Thank you for your contribution!</p>
-              <p className="text-muted-foreground">
+              <p className="text-lg sm:text-xl font-medium text-green-600 dark:text-green-400">Thank you for your contribution!</p>
+              <p className="text-muted-foreground text-sm sm:text-base px-4 sm:px-0">
                 We appreciate your effort in helping students. Your submission will be reviewed and added soon.
               </p>
             </div>
