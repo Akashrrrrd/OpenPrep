@@ -156,13 +156,44 @@ export default function ShareExperiencePage() {
   }
 
   const addRound = () => {
-    if (newRound.type && newRound.description && newRound.difficulty) {
-      setFormData(prev => ({
-        ...prev,
-        rounds: [...prev.rounds, { ...newRound }]
-      }))
-      setNewRound({ type: '', description: '', difficulty: '' as 'easy' | 'medium' | 'hard' })
+    if (!newRound.type) {
+      toast({
+        title: "Missing Round Type",
+        description: "Please select a round type",
+        variant: "destructive"
+      })
+      return
     }
+    
+    if (!newRound.difficulty) {
+      toast({
+        title: "Missing Difficulty",
+        description: "Please select a difficulty level",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    if (!newRound.description.trim()) {
+      toast({
+        title: "Missing Description",
+        description: "Please add a description for this round",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      rounds: [...prev.rounds, { ...newRound }]
+    }))
+    
+    setNewRound({ type: '', description: '', difficulty: '' as 'easy' | 'medium' | 'hard' })
+    
+    toast({
+      title: "Round Added",
+      description: "Interview round has been added successfully",
+    })
   }
 
   const removeRound = (index: number) => {
@@ -212,18 +243,19 @@ export default function ShareExperiencePage() {
                 <Building2 className="h-4 w-4" />
                 Company *
               </Label>
-              <Select value={formData.companyId} onValueChange={(value) => setFormData(prev => ({ ...prev, companyId: value }))}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select the company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <select
+                value={formData.companyId}
+                onChange={(e) => setFormData(prev => ({ ...prev, companyId: e.target.value }))}
+                required
+                className="flex h-11 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select the company</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Role and Date */}
@@ -298,30 +330,30 @@ export default function ShareExperiencePage() {
               <Card className="p-4 border-dashed">
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Select value={newRound.type} onValueChange={(value) => setNewRound(prev => ({ ...prev, type: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Round type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ROUND_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={newRound.difficulty} onValueChange={(value: 'easy' | 'medium' | 'hard') => setNewRound(prev => ({ ...prev, difficulty: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DIFFICULTY_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <select
+                      value={newRound.type}
+                      onChange={(e) => setNewRound(prev => ({ ...prev, type: e.target.value }))}
+                      className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Round type</option>
+                      {ROUND_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={newRound.difficulty}
+                      onChange={(e) => setNewRound(prev => ({ ...prev, difficulty: e.target.value as 'easy' | 'medium' | 'hard' }))}
+                      className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Difficulty</option>
+                      {DIFFICULTY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <Textarea
                     value={newRound.description}
@@ -343,43 +375,37 @@ export default function ShareExperiencePage() {
                 <Label className="flex items-center gap-2 text-sm font-medium">
                   Overall Difficulty *
                 </Label>
-                <Select value={formData.overallDifficulty} onValueChange={(value) => setFormData(prev => ({ ...prev, overallDifficulty: value }))}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select overall difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DIFFICULTY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={`px-2 py-1 rounded text-xs ${option.color}`}>
-                            {option.label}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={formData.overallDifficulty}
+                  onChange={(e) => setFormData(prev => ({ ...prev, overallDifficulty: e.target.value }))}
+                  required
+                  className="flex h-11 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select overall difficulty</option>
+                  {DIFFICULTY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-sm font-medium">
                   Outcome *
                 </Label>
-                <Select value={formData.outcome} onValueChange={(value) => setFormData(prev => ({ ...prev, outcome: value }))}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select outcome" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {OUTCOME_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={`px-2 py-1 rounded text-xs ${option.color}`}>
-                            {option.label}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={formData.outcome}
+                  onChange={(e) => setFormData(prev => ({ ...prev, outcome: e.target.value }))}
+                  required
+                  className="flex h-11 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select outcome</option>
+                  {OUTCOME_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

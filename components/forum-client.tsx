@@ -6,18 +6,36 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, MessageSquare, ThumbsUp, Eye, CheckCircle, Clock, TrendingUp } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Search, MessageSquare, ThumbsUp, ThumbsDown, Eye, CheckCircle, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { ComponentLoading } from "@/components/loading"
+
 
 // Define types locally to avoid importing Mongoose models on client
+interface Like {
+  userId: string
+  username: string
+  timestamp: string
+}
+
+interface Comment {
+  id: string
+  content: string
+  author: string
+  authorReputation: number
+  likes: Like[]
+  createdAt: string
+  updatedAt: string
+}
+
 interface Answer {
   id: string
   content: string
   author: string
   authorReputation: number
-  upvotes: number
-  downvotes: number
+  upvotes: Like[]
+  downvotes: Like[]
+  comments: Comment[]
   isAccepted: boolean
   expertVerified: boolean
   createdAt: string
@@ -32,9 +50,10 @@ interface Question {
   authorReputation: number
   tags: string[]
   difficulty: 'easy' | 'medium' | 'hard'
-  upvotes: number
-  downvotes: number
+  upvotes: Like[]
+  downvotes: Like[]
   views: number
+  comments: Comment[]
   answers: Answer[]
   hasAcceptedAnswer: boolean
   createdAt: string
@@ -49,10 +68,17 @@ interface ForumClientProps {
 export default function ForumClient({ questions, allTags }: ForumClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [questionsData, setQuestionsData] = useState(questions)
+
+  const handleQuestionUpdate = (updatedQuestion: Question) => {
+    setQuestionsData(prev => 
+      prev.map(q => q.id === updatedQuestion.id ? updatedQuestion : q)
+    )
+  }
 
   // Filter questions based on search and tag
   const filteredQuestions = useMemo(() => {
-    let filtered = questions
+    let filtered = questionsData
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
@@ -68,7 +94,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     }
 
     return filtered
-  }, [questions, searchQuery, selectedTag])
+  }, [questionsData, searchQuery, selectedTag])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -112,8 +138,79 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     return { text: 'Beginner', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' }
   }
 
-  const QuestionCard = ({ question }: { question: Question }) => {
+  const QuestionCard = ({ question, onQuestionUpdate }: { question: Question, onQuestionUpdate: (updatedQuestion: Question) => void }) => {
     const repBadge = getReputationBadge(question.authorReputation)
+    const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
+    const [showCommentForm, setShowCommentForm] = useState(false)
+    const [newComment, setNewComment] = useState("")
+    const [isVoting, setIsVoting] = useState(false)
+    const [isCommenting, setIsCommenting] = useState(false)
+    
+    const handleVote = async (voteType: 'up' | 'down') => {
+      if (isVoting) return
+      setIsVoting(true)
+      
+      try {
+        const endpoint = `/api/questions/${question.id}/${voteType}vote`
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: `user-${Date.now()}`, // Generate unique user ID for demo
+            username: 'Anonymous User'
+          })
+        })
+
+        if (response.ok) {
+          const updatedQuestion = await response.json()
+          onQuestionUpdate(updatedQuestion)
+          
+          // Update user vote tracking
+          setUserVote(userVote === voteType ? null : voteType)
+        } else {
+          console.error('Failed to vote:', response.statusText)
+        }
+      } catch (error) {
+        console.error('Error voting:', error)
+      } finally {
+        setIsVoting(false)
+      }
+    }
+
+    const handleSubmitComment = async () => {
+      if (!newComment.trim() || isCommenting) return
+      setIsCommenting(true)
+
+      try {
+        const response = await fetch(`/api/questions/${question.id}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: newComment,
+            author: 'Anonymous User', // TODO: Replace with actual user
+            authorReputation: 0
+          })
+        })
+
+        if (response.ok) {
+          const updatedQuestion = await response.json()
+          onQuestionUpdate(updatedQuestion)
+          setNewComment("")
+          setShowCommentForm(false)
+        } else {
+          console.error('Failed to add comment:', response.statusText)
+        }
+      } catch (error) {
+        console.error('Error submitting comment:', error)
+      } finally {
+        setIsCommenting(false)
+      }
+    }
     
     return (
       <Card className="hover:shadow-md transition-shadow">
@@ -156,20 +253,52 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               </Badge>
             </div>
 
-            {/* Question Stats */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-muted-foreground">
+            {/* Interactive Actions */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-4 w-4" />
-                  <span>{question.upvotes - question.downvotes}</span>
+                  <Button
+                    variant={userVote === 'up' ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => handleVote('up')}
+                    className="flex items-center gap-1 h-8 px-2"
+                  >
+                    <ThumbsUp className="h-3 w-3" />
+                    <span className="text-xs">{question.upvotes.length - question.downvotes.length}</span>
+                  </Button>
+                  <Button
+                    variant={userVote === 'down' ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => handleVote('down')}
+                    className="h-8 px-2"
+                  >
+                    <ThumbsDown className="h-3 w-3" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-1">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{question.answers.length}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  <span>{question.views}</span>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCommentForm(!showCommentForm)}
+                  className="flex items-center gap-1 h-8 px-2"
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  <span className="text-xs">Comment</span>
+                </Button>
+                
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    <span>{question.answers.length} answers</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    <span>{question.comments?.length || 0} comments</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    <span>{question.views} views</span>
+                  </div>
                 </div>
               </div>
               
@@ -177,13 +306,33 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                 <Badge className={repBadge.color} variant="outline">
                   {repBadge.text}
                 </Badge>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-xs">
                   <span className="truncate">by {question.author}</span>
                   <span className="hidden sm:inline">•</span>
-                  <span className="text-xs">{formatDate(question.createdAt)}</span>
+                  <span className="text-muted-foreground">{formatDate(question.createdAt)}</span>
                 </div>
               </div>
             </div>
+
+            {/* Comment Form */}
+            {showCommentForm && (
+              <div className="space-y-3 pt-4 border-t">
+                <Textarea
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="min-h-[80px]"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setShowCommentForm(false)}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleSubmitComment} disabled={!newComment.trim()}>
+                    Comment
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -276,7 +425,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               {filteredQuestions
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .map((question) => (
-                  <QuestionCard key={question.id} question={question} />
+                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
                 ))}
             </div>
           ) : (
@@ -304,13 +453,28 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             <span className="text-sm text-muted-foreground">Most upvoted</span>
           </div>
           
-          <div className="space-y-4">
-            {filteredQuestions
-              .sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes))
-              .map((question) => (
-                <QuestionCard key={question.id} question={question} />
-              ))}
-          </div>
+          {filteredQuestions.length > 0 ? (
+            <div className="space-y-4">
+              {filteredQuestions
+                .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
+                .map((question) => (
+                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
+                ))}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="font-semibold mb-2">No popular questions yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Questions with more upvotes will appear here
+                </p>
+                <Button asChild>
+                  <Link href="/forum/ask">Ask Question</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="unanswered" className="space-y-4">
@@ -319,13 +483,29 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             <span className="text-sm text-muted-foreground">Need your help!</span>
           </div>
           
-          <div className="space-y-4">
-            {filteredQuestions
-              .filter(q => !q.hasAcceptedAnswer)
-              .map((question) => (
-                <QuestionCard key={question.id} question={question} />
-              ))}
-          </div>
+          {filteredQuestions.filter(q => !q.hasAcceptedAnswer).length > 0 ? (
+            <div className="space-y-4">
+              {filteredQuestions
+                .filter(q => !q.hasAcceptedAnswer)
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .map((question) => (
+                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
+                ))}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="font-semibold mb-2">All questions have been answered!</h3>
+                <p className="text-muted-foreground mb-4">
+                  Great job community! All questions have accepted answers.
+                </p>
+                <Button asChild>
+                  <Link href="/forum/ask">Ask Question</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -1,17 +1,42 @@
 import mongoose from 'mongoose'
 
+export interface ILike {
+  userId: string
+  username: string
+  timestamp: Date
+}
+
+export interface IComment {
+  _id?: string
+  id: string
+  content: string
+  author: string
+  authorReputation: number
+  likes: ILike[]
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export interface IAnswer {
   _id?: string
   id: string
   content: string
   author: string
   authorReputation: number
-  upvotes: number
-  downvotes: number
+  upvotes: ILike[]
+  downvotes: ILike[]
+  comments: IComment[]
   isAccepted: boolean
   expertVerified: boolean
   createdAt?: Date
   updatedAt?: Date
+}
+
+export interface IViewRecord {
+  userId: string
+  username: string
+  timestamp: Date
+  ipAddress?: string
 }
 
 export interface IQuestion {
@@ -23,14 +48,56 @@ export interface IQuestion {
   authorReputation: number
   tags: string[]
   difficulty: 'easy' | 'medium' | 'hard'
-  upvotes: number
-  downvotes: number
+  upvotes: ILike[]
+  downvotes: ILike[]
   views: number
+  viewedBy: IViewRecord[]
+  comments: IComment[]
   answers: IAnswer[]
   hasAcceptedAnswer: boolean
   createdAt?: Date
   updatedAt?: Date
 }
+
+const LikeSchema = new mongoose.Schema<ILike>({
+  userId: {
+    type: String,
+    required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false })
+
+const CommentSchema = new mongoose.Schema<IComment>({
+  id: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  author: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  authorReputation: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  likes: [LikeSchema]
+}, {
+  timestamps: true
+})
 
 const AnswerSchema = new mongoose.Schema<IAnswer>({
   id: {
@@ -53,16 +120,9 @@ const AnswerSchema = new mongoose.Schema<IAnswer>({
     default: 0,
     min: 0
   },
-  upvotes: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
-  downvotes: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
+  upvotes: [LikeSchema],
+  downvotes: [LikeSchema],
+  comments: [CommentSchema],
   isAccepted: {
     type: Boolean,
     default: false
@@ -74,6 +134,25 @@ const AnswerSchema = new mongoose.Schema<IAnswer>({
 }, {
   timestamps: true
 })
+
+const ViewRecordSchema = new mongoose.Schema<IViewRecord>({
+  userId: {
+    type: String,
+    required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  ipAddress: {
+    type: String,
+    required: false
+  }
+}, { _id: false })
 
 const QuestionSchema = new mongoose.Schema<IQuestion>({
   id: {
@@ -116,22 +195,15 @@ const QuestionSchema = new mongoose.Schema<IQuestion>({
     required: true,
     index: true
   },
-  upvotes: {
-    type: Number,
-    default: 0,
-    min: 0,
-    index: true
-  },
-  downvotes: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
+  upvotes: [LikeSchema],
+  downvotes: [LikeSchema],
   views: {
     type: Number,
     default: 0,
     min: 0
   },
+  viewedBy: [ViewRecordSchema],
+  comments: [CommentSchema],
   answers: [AnswerSchema],
   hasAcceptedAnswer: {
     type: Boolean,

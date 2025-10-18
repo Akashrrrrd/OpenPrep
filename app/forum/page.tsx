@@ -1,14 +1,41 @@
-import { getAllQuestions } from '@/lib/forum'
-import ForumClient from '@/components/forum-client'
+"use client"
 
-export default async function ForumPage() {
-  // Fetch questions from database
-  const questions = await getAllQuestions()
-  
-  // Get all unique tags
-  const allTags = Array.from(
-    new Set(questions.flatMap(q => q.tags))
-  ).sort()
+import { useState, useEffect } from 'react'
+import ForumClient from '@/components/forum-client'
+import { ComponentLoading } from '@/components/loading'
+
+export default function ForumPage() {
+  const [questions, setQuestions] = useState<any[]>([])
+  const [allTags, setAllTags] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch('/api/questions')
+        if (response.ok) {
+          const data = await response.json()
+          setQuestions(data)
+          
+          // Get all unique tags
+          const tags = Array.from(
+            new Set(data.flatMap((q: any) => q.tags))
+          ).sort()
+          setAllTags(tags)
+        }
+      } catch (error) {
+        console.error('Error fetching questions:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchQuestions()
+  }, [])
+
+  if (loading) {
+    return <ComponentLoading />
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10 space-y-8">

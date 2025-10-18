@@ -17,21 +17,21 @@ export async function POST(
       return NextResponse.json({ error: 'Question not found' }, { status: 404 })
     }
 
-    // Check if user already upvoted
-    const existingUpvote = question.upvotes.find((vote: any) => vote.userId === userId)
+    // Check if user already downvoted
     const existingDownvote = question.downvotes.find((vote: any) => vote.userId === userId)
+    const existingUpvote = question.upvotes.find((vote: any) => vote.userId === userId)
 
-    if (existingUpvote) {
-      // Remove upvote
-      question.upvotes = question.upvotes.filter((vote: any) => vote.userId !== userId)
+    if (existingDownvote) {
+      // Remove downvote
+      question.downvotes = question.downvotes.filter((vote: any) => vote.userId !== userId)
     } else {
-      // Remove downvote if exists
-      if (existingDownvote) {
-        question.downvotes = question.downvotes.filter((vote: any) => vote.userId !== userId)
+      // Remove upvote if exists
+      if (existingUpvote) {
+        question.upvotes = question.upvotes.filter((vote: any) => vote.userId !== userId)
       }
       
-      // Add upvote
-      question.upvotes.push({
+      // Add downvote
+      question.downvotes.push({
         userId,
         username,
         timestamp: new Date()
@@ -42,7 +42,7 @@ export async function POST(
 
     return NextResponse.json(question)
   } catch (error) {
-    console.error('Error upvoting question:', error)
+    console.error('Error downvoting question:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,13 +1,31 @@
 import connectDB from './mongodb'
 import Question, { IQuestion, IAnswer } from './models/Question'
 
+// Define types that match the client component expectations
+interface Like {
+  userId: string
+  username: string
+  timestamp: string
+}
+
+interface Comment {
+  id: string
+  content: string
+  author: string
+  authorReputation: number
+  likes: Like[]
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Answer {
   id: string
   content: string
   author: string
   authorReputation: number
-  upvotes: number
-  downvotes: number
+  upvotes: Like[]
+  downvotes: Like[]
+  comments: Comment[]
   isAccepted: boolean
   expertVerified: boolean
   createdAt: string
@@ -22,17 +40,39 @@ export interface Question {
   authorReputation: number
   tags: string[]
   difficulty: 'easy' | 'medium' | 'hard'
-  upvotes: number
-  downvotes: number
+  upvotes: Like[]
+  downvotes: Like[]
   views: number
+  comments: Comment[]
   answers: Answer[]
   hasAcceptedAnswer: boolean
   createdAt: string
   updatedAt: string
 }
 
-function formatQuestion(q: IQuestion): Question {
-  return {
+// Helper function to clean MongoDB objects for client serialization
+const cleanObject = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj
+  if (Array.isArray(obj)) return obj.map(cleanObject)
+  if (typeof obj === 'object') {
+    const cleaned: any = {}
+    for (const [key, value] of Object.entries(obj)) {
+      if (key === '_id') continue // Skip MongoDB _id
+      if (value instanceof Date) {
+        cleaned[key] = value.toISOString()
+      } else if (typeof value === 'object' && value !== null) {
+        cleaned[key] = cleanObject(value)
+      } else {
+        cleaned[key] = value
+      }
+    }
+    return cleaned
+  }
+  return obj
+}
+
+function formatQuestion(q: IQuestion): any {
+  const formatted = {
     id: q.id,
     title: q.title,
     content: q.content,
@@ -40,39 +80,46 @@ function formatQuestion(q: IQuestion): Question {
     authorReputation: q.authorReputation,
     tags: [...q.tags],
     difficulty: q.difficulty,
-    upvotes: q.upvotes,
-    downvotes: q.downvotes,
+    upvotes: q.upvotes || [],
+    downvotes: q.downvotes || [],
     views: q.views,
-    answers: q.answers.map(formatAnswer),
+    comments: q.comments || [],
+    answers: q.answers ? q.answers.map(formatAnswer) : [],
     hasAcceptedAnswer: q.hasAcceptedAnswer,
     createdAt: q.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: q.updatedAt?.toISOString() || new Date().toISOString()
   }
+  return cleanObject(formatted)
 }
 
-function formatAnswer(a: IAnswer): Answer {
-  return {
+function formatAnswer(a: IAnswer): any {
+  const formatted = {
     id: a.id,
     content: a.content,
     author: a.author,
     authorReputation: a.authorReputation,
-    upvotes: a.upvotes,
-    downvotes: a.downvotes,
+    upvotes: a.upvotes || [],
+    downvotes: a.downvotes || [],
+    comments: a.comments || [],
     isAccepted: a.isAccepted,
     expertVerified: a.expertVerified,
     createdAt: a.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: a.updatedAt?.toISOString() || new Date().toISOString()
   }
+  return cleanObject(formatted)
 }
 
 export async function getAllQuestions(): Promise<Question[]> {
   try {
     await connectDB()
     const questions = await Question.find({})
-      .sort({ createdAt: -1 })
+      .sort({ _id: 1 }) // Sort by MongoDB _id for consistent ordering
       .lean()
     
-    return questions.map(formatQuestion)
+    const formattedQuestions = questions.map(formatQuestion)
+    
+    // Additional client-side sort to ensure consistency
+    return formattedQuestions.sort((a, b) => a.id.localeCompare(b.id))
   } catch (error) {
     console.error('Error fetching all questions:', error)
     return []
@@ -107,6 +154,60 @@ export async function getQuestionById(id: string): Promise<Question | null> {
     return formatQuestion(question)
   } catch (error) {
     console.error('Error fetching question by id:', error)
+    return null
+  }
+}
+
+// New function for detailed question view with all fields
+export async function getQuestionByIdDetailed(id: string): Promise<any | null> {
+  try {
+    await connectDB()
+    const question = await Question.findOne({ id }).lean()
+    
+    if (!question) return null
+    
+    // Helper function to clean MongoDB objects for client serialization
+    const cleanObject = (obj: any): any => {
+      if (obj === null || obj === undefined) return obj
+      if (Array.isArray(obj)) return obj.map(cleanObject)
+      if (typeof obj === 'object') {
+        const cleaned: any = {}
+        for (const [key, value] of Object.entries(obj)) {
+          if (key === '_id') continue // Skip MongoDB _id
+          if (value instanceof Date) {
+            cleaned[key] = value.toISOString()
+          } else if (typeof value === 'object' && value !== null) {
+            cleaned[key] = cleanObject(value)
+          } else {
+            cleaned[key] = value
+          }
+        }
+        return cleaned
+      }
+      return obj
+    }
+    
+    // Return the full question object with all fields for QuestionDetail component
+    return cleanObject({
+      id: question.id,
+      title: question.title,
+      content: question.content,
+      author: question.author,
+      authorReputation: question.authorReputation,
+      tags: [...question.tags],
+      difficulty: question.difficulty,
+      upvotes: question.upvotes || [],
+      downvotes: question.downvotes || [],
+      views: question.views,
+      viewedBy: question.viewedBy || [],
+      comments: question.comments || [],
+      answers: question.answers || [],
+      hasAcceptedAnswer: question.hasAcceptedAnswer,
+      createdAt: question.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: question.updatedAt?.toISOString() || new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching detailed question by id:', error)
     return null
   }
 }
