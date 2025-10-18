@@ -1,5 +1,7 @@
 import connectDB from './mongodb'
 import InterviewExperience, { IInterviewExperience, IInterviewRound } from './models/InterviewExperience'
+// Fallback data import
+import experiencesData from '../src/data/interview-experiences.json'
 
 export interface InterviewRound {
   type: 'aptitude' | 'technical' | 'coding' | 'hr' | 'group_discussion'
@@ -58,8 +60,15 @@ export async function getExperiencesByCompany(companyId: string): Promise<Interv
     
     return experiences.map(formatExperience)
   } catch (error) {
-    console.error('Error fetching experiences by company:', error)
-    return []
+    console.error('Error fetching experiences by company from database, using fallback data:', error)
+    // Return fallback data from JSON file
+    return experiencesData
+      .filter(exp => exp.companyId === companyId)
+      .map(exp => ({
+        ...exp,
+        downvotes: exp.downvotes || 0
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 }
 
@@ -72,8 +81,14 @@ export async function getAllExperiences(): Promise<InterviewExperience[]> {
     
     return experiences.map(formatExperience)
   } catch (error) {
-    console.error('Error fetching all experiences:', error)
-    return []
+    console.error('Error fetching all experiences from database, using fallback data:', error)
+    // Return fallback data from JSON file
+    return experiencesData
+      .map(exp => ({
+        ...exp,
+        downvotes: exp.downvotes || 0
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 }
 
@@ -87,8 +102,15 @@ export async function getRecentExperiences(limit: number = 10): Promise<Intervie
     
     return experiences.map(formatExperience)
   } catch (error) {
-    console.error('Error fetching recent experiences:', error)
-    return []
+    console.error('Error fetching recent experiences from database, using fallback data:', error)
+    // Return fallback data from JSON file
+    return experiencesData
+      .map(exp => ({
+        ...exp,
+        downvotes: exp.downvotes || 0
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, limit)
   }
 }
 

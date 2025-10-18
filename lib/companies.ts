@@ -1,5 +1,7 @@
 import connectDB from './mongodb'
 import Company, { ICompany } from './models/Company'
+// Fallback data import
+import companiesData from '../src/data/companies.json'
 
 export type Company = {
   id: string
@@ -20,8 +22,14 @@ export async function getCompanies(): Promise<Company[]> {
       driveLink: company.driveLink
     }))
   } catch (error) {
-    console.error('Error fetching companies:', error)
-    return []
+    console.error('Error fetching companies from database, using fallback data:', error)
+    // Return fallback data from JSON file
+    return companiesData.map(company => ({
+      id: company.id,
+      name: company.name,
+      logo: company.logo,
+      driveLink: company.driveLink
+    })).sort((a, b) => a.name.localeCompare(b.name))
   }
 }
 

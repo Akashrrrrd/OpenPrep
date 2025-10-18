@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Search, MessageSquare, ThumbsUp, ThumbsDown, Eye, CheckCircle, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
-
 // Define types locally to avoid importing Mongoose models on client
 interface Like {
   userId: string
@@ -71,7 +70,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
   const [questionsData, setQuestionsData] = useState(questions)
 
   const handleQuestionUpdate = (updatedQuestion: Question) => {
-    setQuestionsData(prev => 
+    setQuestionsData(prev =>
       prev.map(q => q.id === updatedQuestion.id ? updatedQuestion : q)
     )
   }
@@ -82,7 +81,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(q => 
+      filtered = filtered.filter(q =>
         q.title.toLowerCase().includes(query) ||
         q.content.toLowerCase().includes(query) ||
         q.tags.some(tag => tag.toLowerCase().includes(query))
@@ -121,13 +120,13 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
       'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
       'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300'
     ]
-    
+
     // Simple hash function to consistently assign colors
     let hash = 0
     for (let i = 0; i < tag.length; i++) {
       hash = ((hash << 5) - hash + tag.charCodeAt(i)) & 0xffffffff
     }
-    
+
     return colors[Math.abs(hash) % colors.length]
   }
 
@@ -145,14 +144,14 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     const [newComment, setNewComment] = useState("")
     const [isVoting, setIsVoting] = useState(false)
     const [isCommenting, setIsCommenting] = useState(false)
-    
+
     const handleVote = async (voteType: 'up' | 'down') => {
       if (isVoting) return
       setIsVoting(true)
-      
+
       try {
         const endpoint = `/api/questions/${question.id}/${voteType}vote`
-        
+
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -167,7 +166,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
         if (response.ok) {
           const updatedQuestion = await response.json()
           onQuestionUpdate(updatedQuestion)
-          
+
           // Update user vote tracking
           setUserVote(userVote === voteType ? null : voteType)
         } else {
@@ -211,7 +210,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
         setIsCommenting(false)
       }
     }
-    
+
     return (
       <Card className="hover:shadow-md transition-shadow">
         <CardContent className="p-6">
@@ -254,8 +253,9 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             </div>
 
             {/* Interactive Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="space-y-3">
+              {/* Vote and Comment Actions */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1">
                   <Button
                     variant={userVote === 'up' ? "default" : "ghost"}
@@ -275,7 +275,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                     <ThumbsDown className="h-3 w-3" />
                   </Button>
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -283,33 +283,40 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                   className="flex items-center gap-1 h-8 px-2"
                 >
                   <MessageSquare className="h-3 w-3" />
-                  <span className="text-xs">Comment</span>
+                  <span className="text-xs hidden sm:inline">Comment</span>
                 </Button>
-                
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+
+                {/* Stats - Mobile Responsive */}
+                <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
                   <div className="flex items-center gap-1">
                     <MessageSquare className="h-3 w-3" />
-                    <span>{question.answers.length} answers</span>
+                    <span className="whitespace-nowrap">{question.answers.length} answers</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageSquare className="h-3 w-3" />
-                    <span>{question.comments?.length || 0} comments</span>
+                    <span className="whitespace-nowrap">{question.comments?.length || 0} comments</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Eye className="h-3 w-3" />
-                    <span>{question.views} views</span>
+                    <span className="whitespace-nowrap">{question.views} views</span>
                   </div>
                 </div>
               </div>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <Badge className={repBadge.color} variant="outline">
-                  {repBadge.text}
-                </Badge>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="truncate">by {question.author}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="text-muted-foreground">{formatDate(question.createdAt)}</span>
+
+              {/* Author Info - Mobile Responsive */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge className={repBadge.color} variant="outline" className="text-xs">
+                    {repBadge.text}
+                  </Badge>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span className="truncate max-w-[120px] sm:max-w-none">by {question.author}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">{formatDate(question.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground sm:hidden">
+                  {formatDate(question.createdAt)}
                 </div>
               </div>
             </div>
@@ -366,11 +373,10 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               {allTags.slice(0, 12).map((tag) => (
                 <Badge
                   key={tag}
-                  className={`cursor-pointer hover:opacity-80 ${
-                    selectedTag === tag 
-                      ? 'bg-primary text-primary-foreground' 
-                      : getTagColor(tag)
-                  }`}
+                  className={`cursor-pointer hover:opacity-80 ${selectedTag === tag
+                    ? 'bg-primary text-primary-foreground'
+                    : getTagColor(tag)
+                    }`}
                   variant="outline"
                   onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
                 >
@@ -419,7 +425,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               {filteredQuestions.length} questions
             </span>
           </div>
-          
+
           {filteredQuestions.length > 0 ? (
             <div className="space-y-4">
               {filteredQuestions
@@ -434,8 +440,8 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                 <Search className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No questions found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || selectedTag 
-                    ? "Try adjusting your search or filters" 
+                  {searchQuery || selectedTag
+                    ? "Try adjusting your search or filters"
                     : "Be the first to ask a question!"
                   }
                 </p>
@@ -452,7 +458,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             <h2 className="text-xl font-semibold">Popular Questions</h2>
             <span className="text-sm text-muted-foreground">Most upvoted</span>
           </div>
-          
+
           {filteredQuestions.length > 0 ? (
             <div className="space-y-4">
               {filteredQuestions
@@ -482,7 +488,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             <h2 className="text-xl font-semibold">Unanswered Questions</h2>
             <span className="text-sm text-muted-foreground">Need your help!</span>
           </div>
-          
+
           {filteredQuestions.filter(q => !q.hasAcceptedAnswer).length > 0 ? (
             <div className="space-y-4">
               {filteredQuestions
