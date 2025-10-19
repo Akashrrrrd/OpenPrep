@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -52,6 +53,7 @@ const OUTCOME_OPTIONS = [
 
 export default function ShareExperiencePage() {
   const router = useRouter()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [companies, setCompanies] = useState<Company[]>([])
   const [formData, setFormData] = useState({
@@ -90,6 +92,16 @@ export default function ShareExperiencePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to share your interview experience.",
+        variant: "destructive"
+      })
+      router.push('/auth/login?redirect=/experiences/share')
+      return
+    }
     
     if (!formData.companyId || !formData.role || !formData.date || !formData.overallDifficulty || !formData.outcome) {
       toast({
@@ -221,7 +233,7 @@ export default function ShareExperiencePage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <LoadingOverlay message="Sharing your experience..." isVisible={loading} />
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
         <Card className="shadow-lg">
@@ -233,6 +245,13 @@ export default function ShareExperiencePage() {
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Help other students by sharing your interview experience and preparation tips
           </p>
+          {!isAuthenticated && !authLoading && (
+            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                🔒 Please log in to share your interview experience and help other students
+              </p>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent>
@@ -487,6 +506,6 @@ export default function ShareExperiencePage() {
         </CardContent>
         </Card>
       </div>
-    </>
+    </div>
   )
 }

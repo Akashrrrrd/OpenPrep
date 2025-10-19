@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Search, MessageSquare, ThumbsUp, ThumbsDown, Eye, CheckCircle, Clock, TrendingUp } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { Search, MessageSquare, ThumbsUp, ThumbsDown, Eye, CheckCircle, Clock, TrendingUp, Lock } from "lucide-react"
 import Link from "next/link"
 
 // Define types locally to avoid importing Mongoose models on client
@@ -65,9 +66,13 @@ interface ForumClientProps {
 }
 
 export default function ForumClient({ questions, allTags }: ForumClientProps) {
+  const { user, isAuthenticated, loading } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [questionsData, setQuestionsData] = useState(questions)
+  
+  // Debug: Log auth state at component level
+  console.log('ForumClient Auth State:', { user, isAuthenticated, loading })
 
   const handleQuestionUpdate = (updatedQuestion: Question) => {
     setQuestionsData(prev =>
@@ -137,7 +142,12 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     return { text: 'Beginner', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' }
   }
 
-  const QuestionCard = ({ question, onQuestionUpdate }: { question: Question, onQuestionUpdate: (updatedQuestion: Question) => void }) => {
+  const QuestionCard = ({ question, onQuestionUpdate, user, isAuthenticated }: { 
+    question: Question, 
+    onQuestionUpdate: (updatedQuestion: Question) => void,
+    user: any,
+    isAuthenticated: boolean
+  }) => {
     const repBadge = getReputationBadge(question.authorReputation)
     const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
     const [showCommentForm, setShowCommentForm] = useState(false)
@@ -146,6 +156,12 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     const [isCommenting, setIsCommenting] = useState(false)
 
     const handleVote = async (voteType: 'up' | 'down') => {
+      // Check if user is authenticated
+      if (!isAuthenticated || !user) {
+        alert('Please log in to vote on questions.')
+        return
+      }
+
       if (isVoting) return
       setIsVoting(true)
 
@@ -158,8 +174,8 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userId: `user-${Date.now()}`, // Generate unique user ID for demo
-            username: 'Anonymous User'
+            userId: user.id,
+            username: user.name
           })
         })
 
@@ -170,16 +186,24 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
           // Update user vote tracking
           setUserVote(userVote === voteType ? null : voteType)
         } else {
-          console.error('Failed to vote:', response.statusText)
+          const errorData = await response.json()
+          alert(errorData.error || 'Failed to vote')
         }
       } catch (error) {
         console.error('Error voting:', error)
+        alert('Failed to vote. Please try again.')
       } finally {
         setIsVoting(false)
       }
     }
 
     const handleSubmitComment = async () => {
+      // Check if user is authenticated
+      if (!isAuthenticated || !user) {
+        alert('Please log in to comment on questions.')
+        return
+      }
+
       if (!newComment.trim() || isCommenting) return
       setIsCommenting(true)
 
@@ -191,8 +215,8 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
           },
           body: JSON.stringify({
             content: newComment,
-            author: 'Anonymous User', // TODO: Replace with actual user
-            authorReputation: 0
+            author: user.name,
+            authorReputation: 0 // This could be fetched from user profile
           })
         })
 
@@ -202,10 +226,12 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
           setNewComment("")
           setShowCommentForm(false)
         } else {
-          console.error('Failed to add comment:', response.statusText)
+          const errorData = await response.json()
+          alert(errorData.error || 'Failed to add comment')
         }
       } catch (error) {
         console.error('Error submitting comment:', error)
+        alert('Failed to add comment. Please try again.')
       } finally {
         setIsCommenting(false)
       }
@@ -256,32 +282,28 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             <div className="space-y-3">
               {/* Vote and Comment Actions */}
               <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant={userVote === 'up' ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => handleVote('up')}
-                    className="flex items-center gap-1 h-8 px-2"
-                  >
-                    <ThumbsUp className="h-3 w-3" />
-                    <span className="text-xs">{question.upvotes.length - question.downvotes.length}</span>
-                  </Button>
-                  <Button
-                    variant={userVote === 'down' ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => handleVote('down')}
-                    className="h-8 px-2"
-                  >
-                    <ThumbsDown className="h-3 w-3" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleVote('up')}
+                  disabled={!isAuthenticated || isVoting}
+                  className={`flex items-center gap-1 h-8 px-2 ${userVote === 'up' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'hover:bg-gray-100'}`}
+                  title={!isAuthenticated ? "Please log in to vote" : ""}
+                >
+                  {!isAuthenticated && <Lock className="h-3 w-3" />}
+                  <ThumbsUp className={`h-3 w-3 ${userVote === 'up' ? 'fill-white' : 'fill-none'}`} />
+                  <span className="text-xs">{question.upvotes.length}</span>
+                </Button>
 
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCommentForm(!showCommentForm)}
+                  disabled={!isAuthenticated || isCommenting}
                   className="flex items-center gap-1 h-8 px-2"
+                  title={!isAuthenticated ? "Please log in to comment" : ""}
                 >
+                  {!isAuthenticated && <Lock className="h-3 w-3 mr-1" />}
                   <MessageSquare className="h-3 w-3" />
                   <span className="text-xs hidden sm:inline">Comment</span>
                 </Button>
@@ -324,20 +346,40 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
             {/* Comment Form */}
             {showCommentForm && (
               <div className="space-y-3 pt-4 border-t">
-                <Textarea
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowCommentForm(false)}>
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSubmitComment} disabled={!newComment.trim()}>
-                    Comment
-                  </Button>
-                </div>
+                {!isAuthenticated ? (
+                  <div className="p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
+                    <Lock className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Please log in to comment on this question.
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <Button asChild variant="default" size="sm">
+                        <a href="/auth/login">Login</a>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <a href="/auth/register">Sign Up</a>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Textarea
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="min-h-[80px]"
+                      disabled={isCommenting}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setShowCommentForm(false)}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={handleSubmitComment} disabled={!newComment.trim() || isCommenting}>
+                        {isCommenting ? 'Posting...' : 'Comment'}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -431,7 +473,13 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               {filteredQuestions
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .map((question) => (
-                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
+                  <QuestionCard 
+                    key={question.id} 
+                    question={question} 
+                    onQuestionUpdate={handleQuestionUpdate}
+                    user={user}
+                    isAuthenticated={isAuthenticated}
+                  />
                 ))}
             </div>
           ) : (
@@ -464,7 +512,13 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               {filteredQuestions
                 .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
                 .map((question) => (
-                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
+                  <QuestionCard 
+                    key={question.id} 
+                    question={question} 
+                    onQuestionUpdate={handleQuestionUpdate}
+                    user={user}
+                    isAuthenticated={isAuthenticated}
+                  />
                 ))}
             </div>
           ) : (
@@ -495,7 +549,13 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                 .filter(q => !q.hasAcceptedAnswer)
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .map((question) => (
-                  <QuestionCard key={question.id} question={question} onQuestionUpdate={handleQuestionUpdate} />
+                  <QuestionCard 
+                    key={question.id} 
+                    question={question} 
+                    onQuestionUpdate={handleQuestionUpdate}
+                    user={user}
+                    isAuthenticated={isAuthenticated}
+                  />
                 ))}
             </div>
           ) : (

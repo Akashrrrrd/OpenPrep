@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { AuthProvider } from "@/contexts/AuthContext"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
@@ -40,12 +41,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Navbar />
-            <main className="min-h-[calc(100dvh-200px)]">{children}</main>
-            <Footer />
-          </Suspense>
-          <Analytics />
+          <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Navbar />
+              <main className="min-h-[calc(100dvh-200px)]">{children}</main>
+              <Footer />
+            </Suspense>
+            <Analytics />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

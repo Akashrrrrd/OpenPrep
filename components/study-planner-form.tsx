@@ -18,9 +18,10 @@ interface Company {
 
 interface StudyPlannerFormProps {
   companies: Company[]
+  isAuthenticated: boolean
 }
 
-export function StudyPlannerForm({ companies }: StudyPlannerFormProps) {
+export function StudyPlannerForm({ companies, isAuthenticated }: StudyPlannerFormProps) {
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [formData, setFormData] = useState({
@@ -37,6 +38,12 @@ export function StudyPlannerForm({ companies }: StudyPlannerFormProps) {
   )
 
   const handleGeneratePlan = async () => {
+    if (!isAuthenticated) {
+      alert('Please log in to generate your personalized study plan')
+      window.location.href = '/auth/login?redirect=/study-planner'
+      return
+    }
+
     if (formData.targetCompanies.length === 0 || !formData.targetDate) {
       alert('Please select at least one company and target date')
       return
@@ -57,7 +64,7 @@ export function StudyPlannerForm({ companies }: StudyPlannerFormProps) {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <LoadingOverlay message="Generating your personalized study plan..." isVisible={loading} />
       <div className="mx-auto w-full max-w-2xl px-4 py-10">
         <Card>
@@ -66,6 +73,13 @@ export function StudyPlannerForm({ companies }: StudyPlannerFormProps) {
             <p className="text-muted-foreground">
               Get a personalized study schedule based on your target companies and available time
             </p>
+            {!isAuthenticated && (
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                  🔒 Please log in to generate your personalized study plan
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Target Companies */}
@@ -242,6 +256,6 @@ export function StudyPlannerForm({ companies }: StudyPlannerFormProps) {
           </CardContent>
         </Card>
       </div>
-    </>
+    </div>
   )
 }

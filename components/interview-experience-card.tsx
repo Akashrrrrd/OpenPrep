@@ -8,7 +8,7 @@ import { Calendar, Clock, ThumbsUp, User, CheckCircle } from "lucide-react"
 import { useState } from "react"
 
 interface InterviewExperienceCardProps {
-  experience: InterviewExperience
+  experience: InterviewExperience & { companyName?: string }
 }
 
 const difficultyColors = {
@@ -47,7 +47,14 @@ export function InterviewExperienceCard({ experience }: InterviewExperienceCardP
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-2 flex-1">
-            <CardTitle className="text-lg font-semibold">{experience.role}</CardTitle>
+            <CardTitle className="text-lg font-semibold">
+              {experience.role}
+              {experience.companyName && (
+                <span className="text-base font-normal text-muted-foreground ml-2">
+                  at {experience.companyName}
+                </span>
+              )}
+            </CardTitle>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />

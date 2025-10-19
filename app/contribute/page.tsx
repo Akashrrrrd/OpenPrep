@@ -2,7 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,11 +13,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { User, Mail, Link as LinkIcon, FileText, Send } from "lucide-react"
 
 export default function ContributePage() {
+  const router = useRouter()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    
+    if (!isAuthenticated) {
+      alert('Please log in to contribute resources')
+      router.push('/auth/login?redirect=/contribute')
+      return
+    }
+    
     setLoading(true)
     // Simulate submission
     setTimeout(() => {
@@ -25,7 +36,8 @@ export default function ContributePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 shadow-lg">
         <CardHeader className="text-center pb-6">
           <div className="flex justify-center mb-4">
@@ -33,6 +45,13 @@ export default function ContributePage() {
           </div>
           <CardTitle className="text-xl sm:text-2xl font-bold">Contribute Resources</CardTitle>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base px-4 sm:px-0">Help students by sharing placement preparation materials</p>
+          {!isAuthenticated && !authLoading && (
+            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                🔒 Please log in to contribute resources and help other students
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-8">
           {submitted ? (
@@ -94,6 +113,7 @@ export default function ContributePage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

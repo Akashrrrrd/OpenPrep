@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -28,6 +29,7 @@ const POPULAR_TAGS = [
 
 export default function AskQuestionPage() {
   const router = useRouter()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
@@ -40,6 +42,16 @@ export default function AskQuestionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to ask a question.",
+        variant: "destructive"
+      })
+      router.push('/auth/login?redirect=/forum/ask')
+      return
+    }
     
     if (!formData.title || !formData.content || !formData.author || !formData.difficulty) {
       toast({
@@ -138,6 +150,13 @@ export default function AskQuestionPage() {
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Get help from the community about recruitment processes, preparation tips, and more
           </p>
+          {!isAuthenticated && !authLoading && (
+            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
+                🔒 Please log in to ask questions and get help from the community
+              </p>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent>

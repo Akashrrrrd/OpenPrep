@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Question from '@/lib/models/Question'
+import { verifyToken } from '@/lib/auth'
+import { UsageTracker } from '@/lib/usage-tracker'
 // Fallback data import
 import questionsData from '@/src/data/questions.json'
 
@@ -153,6 +155,28 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth-token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await verifyToken(token)
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
+    // Check usage limits
+    const usageCheck = await UsageTracker.checkForumPostLimit(user.id)
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: 'Forum post limit exceeded',
+        requiresUpgrade: usageCheck.requiresUpgrade,
+        limit: usageCheck.limit,
+        current: usageCheck.current
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const { id, title, content, author, authorReputation, tags, difficulty } = body
 
@@ -196,6 +220,9 @@ export async function POST(request: NextRequest) {
       if (!savedQuestion) {
         throw new Error('Failed to save to database')
       }
+
+      // Track usage after successful creation
+      await UsageTracker.trackForumPost(user.id)
 
       return NextResponse.json(cleanObject(savedQuestion.toObject()), { status: 201 })
     } catch (dbError) {

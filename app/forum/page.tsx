@@ -38,10 +38,11 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">Q&A Forum</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Q&A Forum</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base px-4 sm:px-0">
           Get help from the community. Ask questions, share knowledge, and learn from experienced students and professionals.
         </p>
@@ -49,6 +50,7 @@ export default function ForumPage() {
 
       {/* Client Component with Interactive Features */}
       <ForumClient questions={questions} allTags={allTags} />
+      </div>
     </div>
   )
 }
