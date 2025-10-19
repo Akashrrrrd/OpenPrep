@@ -18,31 +18,59 @@ interface Material {
 }
 
 async function getMaterialById(id: string): Promise<Material | null> {
+  // Always use static materials for now to avoid hosting issues
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/materials/${id}`, {
-      cache: 'no-store'
-    })
-    if (response.ok) {
-      return await response.json()
-    }
-    return null
+    const { materials } = await import('@/lib/materials')
+    return materials.find(m => m.id === id) || null
   } catch (error) {
-    console.error('Error fetching material:', error)
+    console.error('Error loading static materials:', error)
     return null
   }
 }
 
 async function getMaterials(): Promise<Material[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/materials`, {
-      cache: 'no-store'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                   (typeof window === 'undefined' ? 'http://localhost:3000' : window.location.origin)
+    
+    const response = await fetch(`${baseUrl}/api/materials`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      }
     })
+    
     if (response.ok) {
       return await response.json()
     }
-    return []
+    
+    // Fallback to static materials
+    const { materials } = await import('@/lib/materials')
+    return materials
   } catch (error) {
     console.error('Error fetching materials:', error)
+    
+    // Fallback to static materials
+    try {
+      const { materials } = await import('@/lib/materials')
+      return materials
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError)
+      return []
+    }
+  }
+}
+
+// Generate static params for all materials
+export async function generateStaticParams() {
+  try {
+    // Import static materials to ensure all pages are pre-built
+    const { materials } = await import('@/lib/materials')
+    return materials.map((material) => ({
+      id: material.id,
+    }))
+  } catch (error) {
+    console.error('Error generating static params:', error)
     return []
   }
 }
