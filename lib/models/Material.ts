@@ -52,8 +52,7 @@ const MaterialSchema = new mongoose.Schema<IMaterial>({
   tags: [{
     type: String,
     trim: true,
-    lowercase: true,
-    index: true
+    lowercase: true
   }],
   difficulty: {
     type: String,
