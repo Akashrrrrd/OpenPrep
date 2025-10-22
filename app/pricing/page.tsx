@@ -109,8 +109,8 @@ export default function PricingPage() {
         'Forum participation (read & post)',
         'Interview experiences library',
         'Basic AI interview practice (5/month)',
-        'Community support',
-        'Mobile app access'
+        'Study materials access',
+        'Community support'
       ],
       limitations: [],
       buttonText: 'Get Started Free',
@@ -126,13 +126,13 @@ export default function PricingPage() {
       features: [
         'Everything in Free',
         'Unlimited study plans & customization',
-        'Advanced AI interview practice (unlimited)',
-        'Personalized learning recommendations',
-        'Progress analytics & insights',
+        'Unlimited AI interview practice',
+        'Advanced study plan analytics',
         'Priority forum support',
-        'Resume builder & templates',
-        'Interview scheduling assistant',
-        'Email support (24h response)'
+        'Interview history & progress tracking',
+        'Detailed performance insights',
+        'Chrome AI enhanced features',
+        'Email support'
       ],
       limitations: [],
       buttonText: 'Upgrade to Pro',
@@ -144,18 +144,17 @@ export default function PricingPage() {
       name: 'Premium',
       price: '₹249',
       period: 'month',
-      description: 'Complete career acceleration package',
+      description: 'Complete placement preparation solution',
       features: [
         'Everything in Pro',
-        '1-on-1 career coaching (2 sessions/month)',
-        'Mock interview with industry experts',
-        'Personalized job matching & alerts',
-        'Resume review by HR professionals',
-        'LinkedIn profile optimization',
-        'Salary negotiation guidance',
-        'Job referral network access',
-        'Priority chat support (1h response)',
-        'Exclusive industry webinars'
+        'Advanced AI interview simulations',
+        'Personalized study recommendations',
+        'Comprehensive progress analytics',
+        'Priority technical support',
+        'Advanced Chrome AI features',
+        'Custom study plan templates',
+        'Interview performance analysis',
+        'Premium community access'
       ],
       limitations: [],
       buttonText: 'Go Premium',
