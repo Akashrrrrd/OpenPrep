@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LoadingOverlay } from "@/components/loading"
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Task {
   id: string
@@ -71,7 +72,7 @@ function generateStudyPlan(
   }
 
   return {
-    id: `plan-${Date.now()}`,
+    id: `plan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     targetCompanies,
     availableHoursPerDay,
     targetDate,
@@ -296,6 +297,7 @@ function generateFinalPrepTasks(
 
 export default function StudyPlanPage() {
   const searchParams = useSearchParams()
+  const { refreshAuth } = useAuth()
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -326,6 +328,7 @@ export default function StudyPlanPage() {
 
         // Save the plan to MongoDB
         try {
+          console.log('Attempting to save study plan:', plan.id)
           const response = await fetch('/api/study-plans', {
             method: 'POST',
             headers: {
@@ -334,17 +337,35 @@ export default function StudyPlanPage() {
             body: JSON.stringify(plan),
           })
 
+          console.log('Save response status:', response.status)
+          
           if (response.ok) {
             const savedPlan = await response.json()
             setStudyPlan(savedPlan)
-            console.log('Study plan saved to database:', savedPlan.id)
+            console.log('✅ Study plan saved to database:', savedPlan.id)
+            
+            // Refresh auth context to update dashboard counts
+            await refreshAuth()
           } else {
+            const errorData = await response.json().catch(() => ({}))
+            console.error('❌ Failed to save study plan:', response.status, errorData)
+            
+            // Handle specific error cases
+            if (response.status === 403 && errorData.error === 'Study plan limit exceeded') {
+              setError(`Study plan limit exceeded. You can create ${errorData.limit} plans with your current subscription. You have already created ${errorData.current} plans.`)
+              setLoading(false)
+              return
+            } else if (response.status === 401) {
+              setError('Please log in to save your study plan.')
+              setLoading(false)
+              return
+            }
+            
             // If saving fails, still show the generated plan
-            console.warn('Failed to save study plan to database, showing generated plan')
             setStudyPlan(plan)
           }
         } catch (saveError) {
-          console.warn('Error saving study plan:', saveError)
+          console.error('❌ Network error saving study plan:', saveError)
           // Still show the generated plan even if saving fails
           setStudyPlan(plan)
         }
