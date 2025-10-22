@@ -104,19 +104,16 @@ export default function PricingPage() {
       period: 'forever',
       description: 'Perfect for getting started with placement preparation',
       features: [
-        '1 study plan per month',
-        'Access to 5 companies per month',
-        'Basic forum access (read-only)',
-        'Limited interview experiences',
-        'Community support'
+        'Access to all company resources',
+        'Basic study planner (3 plans/month)',
+        'Forum participation (read & post)',
+        'Interview experiences library',
+        'Basic AI interview practice (5/month)',
+        'Community support',
+        'Mobile app access'
       ],
-      limitations: [
-        'Limited study plan generation',
-        'Restricted company access',
-        'No priority support',
-        'Basic features only'
-      ],
-      buttonText: 'Current Plan',
+      limitations: [],
+      buttonText: 'Get Started Free',
       buttonVariant: 'outline' as const,
       popular: false,
       icon: <Star className="h-5 w-5" />
@@ -125,16 +122,17 @@ export default function PricingPage() {
       name: 'Pro',
       price: '₹99',
       period: 'month',
-      description: 'Ideal for serious placement preparation',
+      description: 'Advanced features for serious job seekers',
       features: [
-        'Unlimited study plans',
-        'Access to all 32+ companies',
-        'Full forum participation',
-        'All interview experiences',
-        'Priority email support',
-        'Advanced analytics dashboard',
-        'Personalized recommendations',
-        'Study progress tracking'
+        'Everything in Free',
+        'Unlimited study plans & customization',
+        'Advanced AI interview practice (unlimited)',
+        'Personalized learning recommendations',
+        'Progress analytics & insights',
+        'Priority forum support',
+        'Resume builder & templates',
+        'Interview scheduling assistant',
+        'Email support (24h response)'
       ],
       limitations: [],
       buttonText: 'Upgrade to Pro',
@@ -146,17 +144,18 @@ export default function PricingPage() {
       name: 'Premium',
       price: '₹249',
       period: 'month',
-      description: 'Complete placement preparation solution',
+      description: 'Complete career acceleration package',
       features: [
         'Everything in Pro',
-        '1-on-1 mentoring sessions (2/month)',
-        'Custom company preparation plans',
-        'AI-powered interview simulation',
-        'Resume review & optimization',
+        '1-on-1 career coaching (2 sessions/month)',
+        'Mock interview with industry experts',
+        'Personalized job matching & alerts',
+        'Resume review by HR professionals',
+        'LinkedIn profile optimization',
+        'Salary negotiation guidance',
         'Job referral network access',
-        'Priority chat support',
-        'Exclusive webinars & workshops',
-        'Career guidance sessions'
+        'Priority chat support (1h response)',
+        'Exclusive industry webinars'
       ],
       limitations: [],
       buttonText: 'Go Premium',
@@ -304,34 +303,34 @@ export default function PricingPage() {
                 Can I change plans anytime?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing.
               </p>
             </div>
             
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Is there a free trial?
+                What's included in the Free plan?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Our Free plan gives you access to core features. You can upgrade anytime to unlock premium features.
+                Full access to company resources, basic study planning, forum participation, and limited AI interview practice - completely free forever.
               </p>
             </div>
             
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                What payment methods do you accept?
+                How does the coaching work in Premium?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                We accept all major credit cards, debit cards, UPI, and net banking through secure payment gateways.
+                Premium includes 2 monthly 1-on-1 sessions with industry professionals for career guidance, interview prep, and job search strategy.
               </p>
             </div>
             
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Do you offer student discounts?
+                Is there a money-back guarantee?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Yes! We offer special pricing for students. Contact our support team with your student ID for details.
+                Yes! We offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, we'll refund your payment.
               </p>
             </div>
           </div>
