@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const decoded = verifyToken(token)
+    const decoded = await verifyToken(token)
     if (!decoded) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
 
-    const result = await NotificationService.getUserNotifications(decoded.userId, {
+    const result = await NotificationService.getUserNotifications(decoded.id, {
       limit,
       offset,
       unreadOnly
@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const decoded = verifyToken(token)
+    const decoded = await verifyToken(token)
     if (!decoded) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -49,9 +49,9 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'markAsRead') {
       if (notificationIds && Array.isArray(notificationIds)) {
-        await NotificationService.markAsRead(decoded.userId, notificationIds)
+        await NotificationService.markAsRead(decoded.id, notificationIds)
       } else {
-        await NotificationService.markAllAsRead(decoded.userId)
+        await NotificationService.markAllAsRead(decoded.id)
       }
     }
 
@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const decoded = verifyToken(token)
+    const decoded = await verifyToken(token)
     if (!decoded) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -81,7 +81,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Notification ID required' }, { status: 400 })
     }
 
-    await NotificationService.deleteNotification(decoded.userId, notificationId)
+    await NotificationService.deleteNotification(decoded.id, notificationId)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting notification:', error)

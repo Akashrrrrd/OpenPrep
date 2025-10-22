@@ -46,14 +46,29 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/notifications?limit=10')
+      const response = await fetch('/api/notifications?limit=10', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      } else if (response.status === 401) {
+        // User not authenticated, silently fail
+        setNotifications([])
+        setUnreadCount(0)
+      } else {
+        console.warn('Failed to fetch notifications:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
+      // Silently fail - don't break the UI
+      setNotifications([])
+      setUnreadCount(0)
     } finally {
       setLoading(false)
     }
