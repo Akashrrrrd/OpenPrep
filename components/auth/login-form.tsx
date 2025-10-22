@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+
 import Link from 'next/link'
 
 export function LoginForm() {
@@ -17,8 +18,19 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { login } = useAuth()
+  const { login, user, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  // Debug logging
+  console.log('LoginForm state:', { user: user?.name, authLoading, loading })
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('User already logged in, redirecting to dashboard')
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,13 +40,13 @@ export function LoginForm() {
     const result = await login(email, password)
 
     if (result.success) {
-      // Force a page reload to ensure middleware picks up the new token
-      window.location.href = '/dashboard'
+      console.log('Login successful, redirecting to dashboard')
+      // Use router.push instead of window.location for better Next.js navigation
+      router.push('/dashboard')
     } else {
       setError(result.error || 'Login failed')
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -106,6 +118,8 @@ export function LoginForm() {
                 'Sign In'
               )}
             </Button>
+
+
 
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Don't have an account? </span>

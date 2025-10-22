@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { InterviewExperience } from "@/lib/experiences"
-import { Calendar, Clock, ThumbsUp, User, CheckCircle } from "lucide-react"
+import { Calendar, Clock, User, CheckCircle } from "lucide-react"
 import { useState } from "react"
 
 interface InterviewExperienceCardProps {
@@ -27,7 +27,6 @@ const outcomeColors = {
 
 export function InterviewExperienceCard({ experience }: InterviewExperienceCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const [upvoted, setUpvoted] = useState(false)
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -41,6 +40,8 @@ export function InterviewExperienceCard({ experience }: InterviewExperienceCardP
     const labels = { 1: 'Very Easy', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Very Hard' }
     return labels[level as keyof typeof labels]
   }
+
+
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -163,29 +164,15 @@ export function InterviewExperienceCard({ experience }: InterviewExperienceCardP
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex justify-center pt-2 border-t">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setExpanded(!expanded)}
+            className="text-sm"
           >
             {expanded ? 'Show Less' : 'Show Details'}
           </Button>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setUpvoted(!upvoted)}
-              className={upvoted ? 'text-primary' : ''}
-            >
-              <ThumbsUp className={`h-4 w-4 mr-1 ${upvoted ? 'fill-current' : ''}`} />
-              {experience.upvotes + (upvoted ? 1 : 0)}
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              {experience.helpful} found helpful
-            </span>
-          </div>
         </div>
       </CardContent>
     </Card>

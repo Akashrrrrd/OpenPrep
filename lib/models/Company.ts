@@ -14,8 +14,7 @@ const CompanySchema = new mongoose.Schema<ICompany>({
   id: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   name: {
     type: String,
@@ -34,8 +33,7 @@ const CompanySchema = new mongoose.Schema<ICompany>({
   timestamps: true
 })
 
-// Create indexes for better performance
+// Create indexes for better performance (id already has unique index from schema)
 CompanySchema.index({ name: 'text' })
-CompanySchema.index({ id: 1 })
 
 export default mongoose.models.Company || mongoose.model<ICompany>('Company', CompanySchema)

@@ -123,7 +123,7 @@ export default function PricingPage() {
     },
     {
       name: 'Pro',
-      price: '₹299',
+      price: '₹99',
       period: 'month',
       description: 'Ideal for serious placement preparation',
       features: [
@@ -144,7 +144,7 @@ export default function PricingPage() {
     },
     {
       name: 'Premium',
-      price: '₹599',
+      price: '₹249',
       period: 'month',
       description: 'Complete placement preparation solution',
       features: [

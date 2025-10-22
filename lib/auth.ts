@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { NextRequest } from 'next/server'
 import connectDB from './mongodb'
 import User, { IUser } from './models/User'
 
@@ -46,34 +47,79 @@ export function generateToken(user: AuthUser): string {
       subscriptionTier: user.subscriptionTier
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '30d' } // 30 days for better persistence
   )
+}
+
+// Verify authentication from request (supports both cookies and Bearer tokens)
+export async function verifyAuth(request: NextRequest): Promise<AuthUser | null> {
+  try {
+    let token: string | null = null
+
+    // First try to get token from Authorization header
+    const authHeader = request.headers.get('authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    }
+
+    // If no Bearer token, try to get from cookies (NextRequest has cookies method)
+    if (!token && 'cookies' in request) {
+      token = request.cookies.get('auth-token')?.value || null
+    }
+
+    if (!token) {
+      return null
+    }
+
+    return await verifyToken(token)
+  } catch (error) {
+    console.error('Auth verification error:', error)
+    return null
+  }
 }
 
 // Verify JWT token
 export async function verifyToken(token: string): Promise<AuthUser | null> {
   try {
+    // First verify the JWT token structure
     const decoded = jwt.verify(token, JWT_SECRET) as any
-    
-    await connectDB()
-    // Find user by custom id field (not MongoDB _id)
-    const user = await User.findOne({ id: decoded.id })
-    
-    if (!user) {
-      // Try to find by email as fallback
-      const userByEmail = await User.findOne({ email: decoded.email })
-      if (userByEmail) {
-        return {
-          id: userByEmail.id,
-          email: userByEmail.email,
-          name: userByEmail.name,
-          subscriptionTier: userByEmail.subscriptionTier,
-          subscriptionStatus: userByEmail.subscriptionStatus
+
+    // If JWT is valid, try to connect to database with retry logic
+    let retries = 3
+    let user = null
+
+    while (retries > 0 && !user) {
+      try {
+        await connectDB()
+
+        // Find user by custom id field (not MongoDB _id)
+        user = await User.findOne({ id: decoded.id }).lean()
+
+        if (!user) {
+          // Try to find by email as fallback
+          const userByEmail = await User.findOne({ email: decoded.email }).lean()
+          if (userByEmail) {
+            user = userByEmail
+          }
+        }
+
+        break // Success, exit retry loop
+      } catch (dbError) {
+        retries--
+        console.warn(`Database connection attempt failed, retries left: ${retries}`, dbError)
+
+        if (retries > 0) {
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
+    }
+
+    if (!user) {
+      console.warn('User not found in database for token:', decoded.id)
       return null
     }
-    
+
     return {
       id: user.id,
       email: user.email,
@@ -82,7 +128,13 @@ export async function verifyToken(token: string): Promise<AuthUser | null> {
       subscriptionStatus: user.subscriptionStatus
     }
   } catch (error) {
-    console.error('Token verification error:', error)
+    if (error.name === 'JsonWebTokenError') {
+      console.warn('Invalid JWT token')
+    } else if (error.name === 'TokenExpiredError') {
+      console.warn('JWT token expired')
+    } else {
+      console.error('Token verification error:', error)
+    }
     return null
   }
 }
@@ -161,8 +213,14 @@ export async function loginUser(credentials: LoginCredentials): Promise<{ user: 
 
     console.log('Login attempt for email:', credentials.email)
 
-    // Find user by email
-    const user = await User.findOne({ email: credentials.email.toLowerCase().trim() })
+    // Find user by email with timeout
+    const user = await Promise.race([
+      User.findOne({ email: credentials.email.toLowerCase().trim() }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timeout')), 10000)
+      )
+    ]) as any
+
     if (!user) {
       console.log('User not found for email:', credentials.email)
       throw new Error('Invalid email or password')
@@ -219,7 +277,7 @@ export async function updateUserProfile(userId: string, updates: Partial<IUser>)
       { ...updates, updatedAt: new Date() },
       { new: true, runValidators: true }
     ).lean()
-    
+
     return user
   } catch (error) {
     console.error('Error updating user profile:', error)
@@ -246,7 +304,7 @@ export function checkSubscriptionLimits(user: AuthUser, action: string): boolean
 export async function trackUserUsage(userId: string, action: 'study_plan' | 'company_access' | 'forum_post', data?: any): Promise<void> {
   try {
     await connectDB()
-    
+
     const updateQuery: any = {
       'usage.lastActiveDate': new Date()
     }
@@ -292,17 +350,17 @@ export async function getUserStats(): Promise<{
 }> {
   try {
     await connectDB()
-    
+
     const totalUsers = await User.countDocuments({})
     const freeUsers = await User.countDocuments({ subscriptionTier: 'free' })
     const proUsers = await User.countDocuments({ subscriptionTier: 'pro' })
     const premiumUsers = await User.countDocuments({ subscriptionTier: 'premium' })
-    
+
     // Users created in last 7 days
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const recentUsers = await User.countDocuments({ 
-      createdAt: { $gte: sevenDaysAgo } 
+    const recentUsers = await User.countDocuments({
+      createdAt: { $gte: sevenDaysAgo }
     })
 
     return {

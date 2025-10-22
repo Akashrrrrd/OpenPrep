@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { MessageSquare, User, Tag, AlertCircle, X, Plus } from "lucide-react"
+import { MessageSquare, User, Tag, AlertCircle, X, Plus, Sparkles, Wand2, CheckCircle } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { LoadingOverlay } from "@/components/loading"
+import { ChromeAIService } from "@/lib/chrome-ai"
+import { AIEnhancedButton } from "@/components/ai-enhanced-button"
 
 const DIFFICULTY_OPTIONS = [
   { value: 'easy', label: 'Easy', color: 'bg-green-100 text-green-800' },
@@ -39,6 +41,42 @@ export default function AskQuestionPage() {
     tags: [] as string[]
   })
   const [newTag, setNewTag] = useState('')
+  const [showAIFeatures, setShowAIFeatures] = useState(false)
+  const [aiCapabilities, setAiCapabilities] = useState<any>(null)
+
+  useEffect(() => {
+    checkAICapabilities()
+  }, [])
+
+  const checkAICapabilities = async () => {
+    const capabilities = await ChromeAIService.getCapabilities()
+    setAiCapabilities(capabilities)
+    setShowAIFeatures(capabilities.writer || capabilities.rewriter || capabilities.proofreader)
+  }
+
+  const handleAIImproveTitle = (improvedTitle: string) => {
+    setFormData(prev => ({ ...prev, title: improvedTitle }))
+    toast({
+      title: "Title Improved!",
+      description: "Your question title has been enhanced using Chrome AI.",
+    })
+  }
+
+  const handleAIImproveContent = (improvedContent: string) => {
+    setFormData(prev => ({ ...prev, content: improvedContent }))
+    toast({
+      title: "Content Improved!",
+      description: "Your question details have been enhanced using Chrome AI.",
+    })
+  }
+
+  const handleAIProofread = (proofreadContent: string) => {
+    setFormData(prev => ({ ...prev, content: proofreadContent }))
+    toast({
+      title: "Content Proofread!",
+      description: "Grammar and spelling have been checked using Chrome AI.",
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -182,15 +220,36 @@ export default function AskQuestionPage() {
               <Label htmlFor="title" className="flex items-center gap-2 text-sm font-medium">
                 <MessageSquare className="h-4 w-4" />
                 Question Title *
+                {showAIFeatures && (
+                  <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-700">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI Enhanced
+                  </Badge>
+                )}
               </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="e.g., What's the new Accenture recruitment process for 2024?"
-                required
-                className="h-11"
-              />
+              <div className="space-y-2">
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g., What's the new Accenture recruitment process for 2024?"
+                  required
+                  className="h-11"
+                />
+                {showAIFeatures && formData.title.trim() && (
+                  <div className="flex gap-2">
+                    <AIEnhancedButton
+                      aiAction="improve"
+                      content={formData.title}
+                      context="question"
+                      onAIResult={handleAIImproveTitle}
+                      variant="outline"
+                    >
+                      Improve
+                    </AIEnhancedButton>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Question Content */}
@@ -198,16 +257,45 @@ export default function AskQuestionPage() {
               <Label htmlFor="content" className="flex items-center gap-2 text-sm font-medium">
                 <AlertCircle className="h-4 w-4" />
                 Question Details *
+                {showAIFeatures && (
+                  <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-700">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI Enhanced
+                  </Badge>
+                )}
               </Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="Provide more details about your question. Be specific about what you want to know..."
-                rows={6}
-                required
-                className="resize-none"
-              />
+              <div className="space-y-2">
+                <Textarea
+                  id="content"
+                  value={formData.content}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Provide more details about your question. Be specific about what you want to know..."
+                  rows={6}
+                  required
+                  className="resize-none"
+                />
+                {showAIFeatures && formData.content.trim() && (
+                  <div className="flex gap-2 flex-wrap">
+                    <AIEnhancedButton
+                      aiAction="improve"
+                      content={formData.content}
+                      context="question"
+                      onAIResult={handleAIImproveContent}
+                      variant="outline"
+                    >
+                      Improve
+                    </AIEnhancedButton>
+                    <AIEnhancedButton
+                      aiAction="proofread"
+                      content={formData.content}
+                      onAIResult={handleAIProofread}
+                      variant="outline"
+                    >
+                      Proofread
+                    </AIEnhancedButton>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Difficulty Level */}

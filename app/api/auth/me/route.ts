@@ -3,33 +3,70 @@ import { verifyToken, getUserById, updateUserProfile } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 /api/auth/me - Checking authentication...')
+    
     // Get token from cookie
     const token = request.cookies.get('auth-token')?.value
+    console.log('🍪 Token found:', !!token)
 
     if (!token) {
+      console.log('❌ No auth token found in cookies')
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: 'Not authenticated - no token' },
         { status: 401 }
       )
     }
 
-    // Verify token
+    console.log('🔐 Verifying token...')
+    // Verify token (this now includes database retry logic)
     const authUser = await verifyToken(token)
     if (!authUser) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
+      console.log('❌ Token verification failed')
+      // Clear invalid cookie
+      const response = NextResponse.json(
+        { error: 'Invalid or expired token' },
         { status: 401 }
+      )
+      response.cookies.set('auth-token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0 // Expire immediately
+      })
+      return response
+    }
+
+    console.log('✅ Token verified for user:', authUser.id)
+
+    // Try to get full user data with retry logic
+    let user = null
+    let retries = 3
+    
+    while (retries > 0 && !user) {
+      try {
+        console.log(`📊 Fetching user data (attempt ${4 - retries}/3)...`)
+        user = await getUserById(authUser.id)
+        break
+      } catch (dbError) {
+        retries--
+        console.warn(`Database query failed, retries left: ${retries}`, dbError)
+        
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+    }
+
+    if (!user) {
+      console.log('❌ Failed to fetch user data after retries')
+      return NextResponse.json(
+        { error: 'User data temporarily unavailable' },
+        { status: 503 } // Service Unavailable
       )
     }
 
-    // Get full user data
-    const user = await getUserById(authUser.id)
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
+    console.log('✅ User data fetched successfully:', user.name)
 
     // Return user data (excluding password)
     const { password, ...userWithoutPassword } = user
@@ -38,7 +75,7 @@ export async function GET(request: NextRequest) {
       user: userWithoutPassword
     })
   } catch (error) {
-    console.error('Auth verification error:', error)
+    console.error('🚨 Auth verification error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -8,13 +8,13 @@ interface QuestionPageProps {
 
 export default async function QuestionPage({ params }: QuestionPageProps) {
   const question = await getQuestionByIdDetailed(params.id)
-  
+
   if (!question) {
     notFound()
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10">
+    <div className="mx-auto w-full max-w-4xl px-3 sm:px-4 py-4 sm:py-6 lg:py-10">
       <QuestionDetail question={question} />
     </div>
   )
@@ -22,7 +22,7 @@ export default async function QuestionPage({ params }: QuestionPageProps) {
 
 export async function generateMetadata({ params }: QuestionPageProps) {
   const question = await getQuestionByIdDetailed(params.id)
-  
+
   if (!question) {
     return {
       title: 'Question Not Found - OpenPrep Forum'

@@ -3,6 +3,7 @@ import StudyPlan, { IStudyPlan, ITask, IDailyTask } from './models/StudyPlan'
 
 export interface StudyPlan {
   id: string
+  userId?: string
   targetCompanies: string[]
   availableHoursPerDay: number
   targetDate: string
@@ -290,6 +291,7 @@ function generateFinalPrepTasks(
 function formatStudyPlan(plan: IStudyPlan): StudyPlan {
   return {
     id: plan.id,
+    userId: plan.userId,
     targetCompanies: [...plan.targetCompanies],
     availableHoursPerDay: plan.availableHoursPerDay,
     targetDate: plan.targetDate.toISOString(),

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/AuthContext"
-import { Search, MessageSquare, ThumbsUp, ThumbsDown, Eye, CheckCircle, Clock, TrendingUp, Lock } from "lucide-react"
+import { Search, MessageSquare, CheckCircle, Clock, TrendingUp, Lock } from "lucide-react"
 import Link from "next/link"
 
 // Define types locally to avoid importing Mongoose models on client
@@ -142,100 +142,10 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
     return { text: 'Beginner', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' }
   }
 
-  const QuestionCard = ({ question, onQuestionUpdate, user, isAuthenticated }: { 
-    question: Question, 
-    onQuestionUpdate: (updatedQuestion: Question) => void,
-    user: any,
-    isAuthenticated: boolean
+  const QuestionCard = ({ question }: { 
+    question: Question
   }) => {
     const repBadge = getReputationBadge(question.authorReputation)
-    const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
-    const [showCommentForm, setShowCommentForm] = useState(false)
-    const [newComment, setNewComment] = useState("")
-    const [isVoting, setIsVoting] = useState(false)
-    const [isCommenting, setIsCommenting] = useState(false)
-
-    const handleVote = async (voteType: 'up' | 'down') => {
-      // Check if user is authenticated
-      if (!isAuthenticated || !user) {
-        alert('Please log in to vote on questions.')
-        return
-      }
-
-      if (isVoting) return
-      setIsVoting(true)
-
-      try {
-        const endpoint = `/api/questions/${question.id}/${voteType}vote`
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            username: user.name
-          })
-        })
-
-        if (response.ok) {
-          const updatedQuestion = await response.json()
-          onQuestionUpdate(updatedQuestion)
-
-          // Update user vote tracking
-          setUserVote(userVote === voteType ? null : voteType)
-        } else {
-          const errorData = await response.json()
-          alert(errorData.error || 'Failed to vote')
-        }
-      } catch (error) {
-        console.error('Error voting:', error)
-        alert('Failed to vote. Please try again.')
-      } finally {
-        setIsVoting(false)
-      }
-    }
-
-    const handleSubmitComment = async () => {
-      // Check if user is authenticated
-      if (!isAuthenticated || !user) {
-        alert('Please log in to comment on questions.')
-        return
-      }
-
-      if (!newComment.trim() || isCommenting) return
-      setIsCommenting(true)
-
-      try {
-        const response = await fetch(`/api/questions/${question.id}/comments`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            content: newComment,
-            author: user.name,
-            authorReputation: 0 // This could be fetched from user profile
-          })
-        })
-
-        if (response.ok) {
-          const updatedQuestion = await response.json()
-          onQuestionUpdate(updatedQuestion)
-          setNewComment("")
-          setShowCommentForm(false)
-        } else {
-          const errorData = await response.json()
-          alert(errorData.error || 'Failed to add comment')
-        }
-      } catch (error) {
-        console.error('Error submitting comment:', error)
-        alert('Failed to add comment. Please try again.')
-      } finally {
-        setIsCommenting(false)
-      }
-    }
 
     return (
       <Card className="hover:shadow-md transition-shadow">
@@ -278,110 +188,30 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
               </Badge>
             </div>
 
-            {/* Interactive Actions */}
-            <div className="space-y-3">
-              {/* Vote and Comment Actions */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleVote('up')}
-                  disabled={!isAuthenticated || isVoting}
-                  className={`flex items-center gap-1 h-8 px-2 ${userVote === 'up' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'hover:bg-gray-100'}`}
-                  title={!isAuthenticated ? "Please log in to vote" : ""}
-                >
-                  {!isAuthenticated && <Lock className="h-3 w-3" />}
-                  <ThumbsUp className={`h-3 w-3 ${userVote === 'up' ? 'fill-white' : 'fill-none'}`} />
-                  <span className="text-xs">{question.upvotes.length}</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowCommentForm(!showCommentForm)}
-                  disabled={!isAuthenticated || isCommenting}
-                  className="flex items-center gap-1 h-8 px-2"
-                  title={!isAuthenticated ? "Please log in to comment" : ""}
-                >
-                  {!isAuthenticated && <Lock className="h-3 w-3 mr-1" />}
-                  <MessageSquare className="h-3 w-3" />
-                  <span className="text-xs hidden sm:inline">Comment</span>
-                </Button>
-
-                {/* Stats - Mobile Responsive */}
-                <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    <span className="whitespace-nowrap">{question.answers.length} answers</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    <span className="whitespace-nowrap">{question.comments?.length || 0} comments</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    <span className="whitespace-nowrap">{question.views} views</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Author Info - Mobile Responsive */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className={repBadge.color} variant="outline" className="text-xs">
-                    {repBadge.text}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <span className="truncate max-w-[120px] sm:max-w-none">by {question.author}</span>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline">{formatDate(question.createdAt)}</span>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground sm:hidden">
-                  {formatDate(question.createdAt)}
-                </div>
+            {/* Stats */}
+            <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                <span className="whitespace-nowrap">{question.answers.length} answers</span>
               </div>
             </div>
 
-            {/* Comment Form */}
-            {showCommentForm && (
-              <div className="space-y-3 pt-4 border-t">
-                {!isAuthenticated ? (
-                  <div className="p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
-                    <Lock className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Please log in to comment on this question.
-                    </p>
-                    <div className="flex gap-2 justify-center">
-                      <Button asChild variant="default" size="sm">
-                        <a href="/auth/login">Login</a>
-                      </Button>
-                      <Button asChild variant="outline" size="sm">
-                        <a href="/auth/register">Sign Up</a>
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <Textarea
-                      placeholder="Add a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[80px]"
-                      disabled={isCommenting}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setShowCommentForm(false)}>
-                        Cancel
-                      </Button>
-                      <Button size="sm" onClick={handleSubmitComment} disabled={!newComment.trim() || isCommenting}>
-                        {isCommenting ? 'Posting...' : 'Comment'}
-                      </Button>
-                    </div>
-                  </>
-                )}
+            {/* Author Info - Mobile Responsive */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Badge className={`${repBadge.color} text-xs`} variant="outline">
+                  {repBadge.text}
+                </Badge>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="truncate max-w-[120px] sm:max-w-none">by {question.author}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline">{formatDate(question.createdAt)}</span>
+                </div>
               </div>
-            )}
+              <div className="text-xs text-muted-foreground sm:hidden">
+                {formatDate(question.createdAt)}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -476,9 +306,6 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                   <QuestionCard 
                     key={question.id} 
                     question={question} 
-                    onQuestionUpdate={handleQuestionUpdate}
-                    user={user}
-                    isAuthenticated={isAuthenticated}
                   />
                 ))}
             </div>
@@ -504,20 +331,17 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
         <TabsContent value="popular" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Popular Questions</h2>
-            <span className="text-sm text-muted-foreground">Most upvoted</span>
+            <span className="text-sm text-muted-foreground">Most answered</span>
           </div>
 
           {filteredQuestions.length > 0 ? (
             <div className="space-y-4">
               {filteredQuestions
-                .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
+                .sort((a, b) => b.answers.length - a.answers.length)
                 .map((question) => (
                   <QuestionCard 
                     key={question.id} 
                     question={question} 
-                    onQuestionUpdate={handleQuestionUpdate}
-                    user={user}
-                    isAuthenticated={isAuthenticated}
                   />
                 ))}
             </div>
@@ -527,7 +351,7 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                 <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No popular questions yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Questions with more upvotes will appear here
+                  Questions with more answers will appear here
                 </p>
                 <Button asChild>
                   <Link href="/forum/ask">Ask Question</Link>
@@ -552,9 +376,6 @@ export default function ForumClient({ questions, allTags }: ForumClientProps) {
                   <QuestionCard 
                     key={question.id} 
                     question={question} 
-                    onQuestionUpdate={handleQuestionUpdate}
-                    user={user}
-                    isAuthenticated={isAuthenticated}
                   />
                 ))}
             </div>

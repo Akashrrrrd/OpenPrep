@@ -4,9 +4,13 @@ export interface IUser {
   _id?: string
   id: string
   email: string
-  password: string
+  password?: string
   name: string
   avatar?: string
+  image?: string
+  provider?: 'local' | 'google'
+  googleId?: string
+  emailVerified?: boolean
   subscriptionTier: 'free' | 'pro' | 'premium'
   subscriptionStatus: 'active' | 'cancelled' | 'expired'
   subscriptionStartDate?: Date
@@ -51,20 +55,18 @@ const UserSchema = new mongoose.Schema<IUser>({
   id: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true,
-    index: true
+    trim: true
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     minlength: 6
   },
   name: {
@@ -75,6 +77,23 @@ const UserSchema = new mongoose.Schema<IUser>({
   avatar: {
     type: String,
     default: null
+  },
+  image: {
+    type: String,
+    default: null
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+  googleId: {
+    type: String,
+    default: null
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
   },
   subscriptionTier: {
     type: String,
@@ -163,7 +182,31 @@ const UserSchema = new mongoose.Schema<IUser>({
       type: Number,
       default: 0
     },
+    questionsViewed: {
+      type: Number,
+      default: 0
+    },
+    answersPosted: {
+      type: Number,
+      default: 0
+    },
+    commentsPosted: {
+      type: Number,
+      default: 0
+    },
+    votesCast: {
+      type: Number,
+      default: 0
+    },
+    searchesPerformed: {
+      type: Number,
+      default: 0
+    },
     lastActiveDate: {
+      type: Date,
+      default: Date.now
+    },
+    lastProfileUpdate: {
       type: Date,
       default: Date.now
     },
@@ -175,6 +218,24 @@ const UserSchema = new mongoose.Schema<IUser>({
       actions: {
         type: Number,
         default: 0
+      }
+    }],
+    activityLog: [{
+      action: {
+        type: String,
+        required: true
+      },
+      metadata: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now
+      },
+      sessionId: {
+        type: String,
+        default: 'unknown'
       }
     }]
   },
@@ -196,8 +257,7 @@ const UserSchema = new mongoose.Schema<IUser>({
   timestamps: true
 })
 
-// Indexes for performance
-UserSchema.index({ email: 1 })
+// Indexes for performance (email and id already have unique indexes from schema)
 UserSchema.index({ subscriptionTier: 1, subscriptionStatus: 1 })
 UserSchema.index({ 'usage.lastActiveDate': -1 })
 

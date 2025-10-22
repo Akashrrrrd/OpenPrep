@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/contexts/AuthContext'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+
 import Link from 'next/link'
 
 export function RegisterForm() {
@@ -25,8 +26,15 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { register } = useAuth()
+  const { register, user, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -59,13 +67,16 @@ export function RegisterForm() {
     })
 
     if (result.success) {
-      // Force a page reload to ensure middleware picks up the new token
-      window.location.href = '/dashboard'
+      // Wait a moment for the cookie to be set, then redirect
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 500)
     } else {
       setError(result.error || 'Registration failed')
+      setLoading(false)
     }
 
-    setLoading(false)
+    // Don't set loading to false immediately on success to prevent UI flicker
   }
 
   const currentYear = new Date().getFullYear()
@@ -214,6 +225,8 @@ export function RegisterForm() {
                 'Create Account'
               )}
             </Button>
+
+
 
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Already have an account? </span>

@@ -139,7 +139,7 @@ export class UsageTracker {
     })
   }
 
-  static async trackPageView(userId: string): Promise<void> {
+  static async trackPageView(userId: string, page?: string): Promise<void> {
     await connectDB()
     const today = new Date().toISOString().split('T')[0]
     
@@ -168,6 +168,76 @@ export class UsageTracker {
         $inc: { 'usage.dailyActivity.$.actions': 1 }
       }
     )
+
+    // Track detailed activity
+    if (page) {
+      await this.trackDetailedActivity(userId, 'page_view', { page })
+    }
+  }
+
+  static async trackDetailedActivity(userId: string, action: string, metadata?: any): Promise<void> {
+    try {
+      await connectDB()
+      
+      // Create activity log entry
+      const activityData = {
+        userId,
+        action,
+        metadata: metadata || {},
+        timestamp: new Date(),
+        sessionId: metadata?.sessionId || 'unknown'
+      }
+
+      // Store in user's activity log (keep last 100 activities)
+      await User.findOneAndUpdate(
+        { id: userId },
+        {
+          $push: {
+            'usage.activityLog': {
+              $each: [activityData],
+              $slice: -100 // Keep only last 100 activities
+            }
+          },
+          'usage.lastActiveDate': new Date()
+        }
+      )
+
+      // Update specific counters based on action
+      switch (action) {
+        case 'question_viewed':
+          await User.findOneAndUpdate({ id: userId }, {
+            $inc: { 'usage.questionsViewed': 1 }
+          })
+          break
+        case 'answer_posted':
+          await User.findOneAndUpdate({ id: userId }, {
+            $inc: { 'usage.answersPosted': 1 }
+          })
+          break
+        case 'comment_posted':
+          await User.findOneAndUpdate({ id: userId }, {
+            $inc: { 'usage.commentsPosted': 1 }
+          })
+          break
+        case 'vote_cast':
+          await User.findOneAndUpdate({ id: userId }, {
+            $inc: { 'usage.votesCast': 1 }
+          })
+          break
+        case 'search_performed':
+          await User.findOneAndUpdate({ id: userId }, {
+            $inc: { 'usage.searchesPerformed': 1 }
+          })
+          break
+        case 'profile_updated':
+          await User.findOneAndUpdate({ id: userId }, {
+            'usage.lastProfileUpdate': new Date()
+          })
+          break
+      }
+    } catch (error) {
+      console.error('Error tracking detailed activity:', error)
+    }
   }
 
   static async getUserUsageStats(userId: string) {
@@ -207,5 +277,66 @@ export class UsageTracker {
       },
       features: limits.features
     }
+  }
+
+  static async getActivityInsights(userId: string) {
+    await connectDB()
+    const user = await User.findOne({ id: userId })
+    if (!user) throw new Error('User not found')
+
+    const usage = user.usage || {}
+    const activityLog = usage.activityLog || []
+    
+    // Calculate insights
+    const last7Days = new Date()
+    last7Days.setDate(last7Days.getDate() - 7)
+    
+    const recentActivity = activityLog.filter((activity: any) => 
+      new Date(activity.timestamp) > last7Days
+    )
+
+    const actionCounts = recentActivity.reduce((acc: any, activity: any) => {
+      acc[activity.action] = (acc[activity.action] || 0) + 1
+      return acc
+    }, {})
+
+    return {
+      totalActivities: activityLog.length,
+      recentActivities: recentActivity.length,
+      actionBreakdown: actionCounts,
+      mostActiveDay: this.getMostActiveDay(usage.dailyActivity || []),
+      streakDays: this.calculateStreak(usage.dailyActivity || []),
+      lastActive: usage.lastActiveDate
+    }
+  }
+
+  private static getMostActiveDay(dailyActivity: any[]) {
+    if (!dailyActivity.length) return null
+    return dailyActivity.reduce((max, day) => 
+      day.actions > max.actions ? day : max
+    )
+  }
+
+  private static calculateStreak(dailyActivity: any[]) {
+    if (!dailyActivity.length) return 0
+    
+    const sortedDays = dailyActivity
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    
+    let streak = 0
+    const today = new Date().toISOString().split('T')[0]
+    let currentDate = new Date(today)
+    
+    for (const day of sortedDays) {
+      const dayDate = currentDate.toISOString().split('T')[0]
+      if (day.date === dayDate && day.actions > 0) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
   }
 }

@@ -46,14 +46,14 @@ function generateStudyPlan(
   const startDate = new Date()
   const endDate = new Date(targetDate)
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   const dailyTasks: DailyTask[] = []
-  
+
   // Generate tasks for each day
   for (let i = 0; i < totalDays; i++) {
     const currentDate = new Date(startDate)
     currentDate.setDate(startDate.getDate() + i)
-    
+
     const tasks = generateDailyTasks(
       i,
       totalDays,
@@ -62,14 +62,14 @@ function generateStudyPlan(
       focusAreas,
       targetCompanies
     )
-    
+
     dailyTasks.push({
       date: currentDate.toISOString().split('T')[0],
       tasks,
       totalHours: tasks.reduce((sum, task) => sum + task.duration / 60, 0)
     })
   }
-  
+
   return {
     id: `plan-${Date.now()}`,
     targetCompanies,
@@ -92,12 +92,12 @@ function generateDailyTasks(
 ): Task[] {
   const tasks: Task[] = []
   const availableMinutes = availableHours * 60
-  
+
   // Phase-based approach
   const phase1Days = Math.floor(totalDays * 0.6) // 60% foundation
   const phase2Days = Math.floor(totalDays * 0.3) // 30% practice
   const phase3Days = totalDays - phase1Days - phase2Days // 10% final prep
-  
+
   if (dayIndex < phase1Days) {
     // Foundation Phase
     tasks.push(...generateFoundationTasks(availableMinutes, level, focusAreas))
@@ -108,7 +108,7 @@ function generateDailyTasks(
     // Final Preparation Phase
     tasks.push(...generateFinalPrepTasks(availableMinutes, targetCompanies))
   }
-  
+
   return tasks
 }
 
@@ -119,7 +119,7 @@ function generateFoundationTasks(
 ): Task[] {
   const tasks: Task[] = []
   const timePerArea = Math.floor(availableMinutes / focusAreas.length)
-  
+
   focusAreas.forEach((area, index) => {
     switch (area) {
       case 'aptitude':
@@ -129,7 +129,7 @@ function generateFoundationTasks(
           type: 'aptitude',
           duration: Math.floor(timePerArea * 0.6),
           priority: 'high',
-          description: level === 'beginner' 
+          description: level === 'beginner'
             ? 'Basic arithmetic, percentages, and simple interest'
             : 'Advanced problems on time & work, profit & loss',
           resources: [
@@ -139,7 +139,7 @@ function generateFoundationTasks(
           ],
           completed: false
         })
-        
+
         tasks.push({
           id: `task-${Date.now()}-${index}-2`,
           title: 'Logical Reasoning',
@@ -154,7 +154,7 @@ function generateFoundationTasks(
           completed: false
         })
         break
-        
+
       case 'coding':
         tasks.push({
           id: `task-${Date.now()}-${index}`,
@@ -173,7 +173,7 @@ function generateFoundationTasks(
           completed: false
         })
         break
-        
+
       case 'technical':
         tasks.push({
           id: `task-${Date.now()}-${index}`,
@@ -190,7 +190,7 @@ function generateFoundationTasks(
           completed: false
         })
         break
-        
+
       case 'hr':
         tasks.push({
           id: `task-${Date.now()}-${index}`,
@@ -209,7 +209,7 @@ function generateFoundationTasks(
         break
     }
   })
-  
+
   return tasks
 }
 
@@ -220,7 +220,7 @@ function generatePracticeTasks(
   targetCompanies: string[]
 ): Task[] {
   const tasks: Task[] = []
-  
+
   // Mock tests take priority in practice phase
   tasks.push({
     id: `mock-${Date.now()}`,
@@ -236,9 +236,9 @@ function generatePracticeTasks(
     ],
     completed: false
   })
-  
+
   const remainingTime = availableMinutes - 120
-  
+
   // Focus on weak areas identified from mock tests
   tasks.push({
     id: `practice-${Date.now()}`,
@@ -254,7 +254,7 @@ function generatePracticeTasks(
     ],
     completed: false
   })
-  
+
   return tasks
 }
 
@@ -301,7 +301,7 @@ export default function StudyPlanPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const generatePlan = async () => {
+    const generateAndSavePlan = async () => {
       try {
         const companies = searchParams.get('companies')?.split(',') || []
         const hours = parseInt(searchParams.get('hours') || '4')
@@ -315,6 +315,7 @@ export default function StudyPlanPage() {
           return
         }
 
+        // Generate the study plan
         const plan = generateStudyPlan(
           companies,
           hours,
@@ -323,7 +324,31 @@ export default function StudyPlanPage() {
           areas as ('aptitude' | 'coding' | 'technical' | 'hr')[]
         )
 
-        setStudyPlan(plan)
+        // Save the plan to MongoDB
+        try {
+          const response = await fetch('/api/study-plans', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(plan),
+          })
+
+          if (response.ok) {
+            const savedPlan = await response.json()
+            setStudyPlan(savedPlan)
+            console.log('Study plan saved to database:', savedPlan.id)
+          } else {
+            // If saving fails, still show the generated plan
+            console.warn('Failed to save study plan to database, showing generated plan')
+            setStudyPlan(plan)
+          }
+        } catch (saveError) {
+          console.warn('Error saving study plan:', saveError)
+          // Still show the generated plan even if saving fails
+          setStudyPlan(plan)
+        }
+
       } catch (err) {
         console.error('Error generating study plan:', err)
         setError('Failed to generate study plan')
@@ -332,7 +357,7 @@ export default function StudyPlanPage() {
       }
     }
 
-    generatePlan()
+    generateAndSavePlan()
   }, [searchParams])
 
   if (loading) {
@@ -417,10 +442,10 @@ export default function StudyPlanPage() {
             <CardHeader className="pb-3 px-4 sm:px-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <CardTitle className="text-base sm:text-lg leading-tight">
-                  Day {dayIndex + 1} - {new Date(day.date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'short', 
-                    day: 'numeric' 
+                  Day {dayIndex + 1} - {new Date(day.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric'
                   })}
                 </CardTitle>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -439,15 +464,14 @@ export default function StudyPlanPage() {
                         <Badge variant="outline" className="text-xs whitespace-nowrap">
                           {Math.round(task.duration / 60)}h {task.duration % 60}m
                         </Badge>
-                        <Badge 
+                        <Badge
                           variant={task.priority === 'high' ? 'default' : task.priority === 'medium' ? 'secondary' : 'outline'}
-                          className={`text-xs capitalize ${
-                            task.priority === 'high' 
-                              ? 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200' 
+                          className={`text-xs capitalize ${task.priority === 'high'
+                              ? 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200'
                               : task.priority === 'medium'
-                              ? 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200'
-                              : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
-                          }`}
+                                ? 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200'
+                                : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                            }`}
                         >
                           {task.priority}
                         </Badge>
