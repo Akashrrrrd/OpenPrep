@@ -9,10 +9,10 @@ export interface SubscriptionLimits {
 
 export const SUBSCRIPTION_LIMITS: Record<string, SubscriptionLimits> = {
   free: {
-    studyPlans: 1,
-    companies: 5,
-    forumPosts: 5,
-    features: ['basic_forum', 'limited_companies', 'basic_study_plans']
+    studyPlans: 3,
+    companies: 999, // All companies as mentioned in pricing
+    forumPosts: 999, // Full forum participation as mentioned in pricing
+    features: ['basic_forum', 'all_companies', 'basic_study_plans']
   },
   pro: {
     studyPlans: 999,
