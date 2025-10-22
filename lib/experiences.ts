@@ -22,18 +22,16 @@ export interface InterviewExperience {
   tips: string[]
   anonymous: boolean
   verified: boolean
-  upvotes: number
-  downvotes: number
-  helpful: number
+
 }
 
-function formatExperience(exp: IInterviewExperience): InterviewExperience {
+function formatExperience(exp: any): InterviewExperience {
   return {
     id: exp.id,
     companyId: exp.companyId,
     role: exp.role,
-    date: exp.date.toISOString(),
-    rounds: exp.rounds.map(round => ({
+    date: exp.date instanceof Date ? exp.date.toISOString() : exp.date,
+    rounds: exp.rounds.map((round: any) => ({
       type: round.type,
       duration: round.duration,
       questions: [...round.questions],
@@ -45,9 +43,7 @@ function formatExperience(exp: IInterviewExperience): InterviewExperience {
     tips: [...exp.tips],
     anonymous: exp.anonymous,
     verified: exp.verified,
-    upvotes: exp.upvotes,
-    downvotes: exp.downvotes,
-    helpful: exp.helpful
+
   }
 }
 
@@ -64,11 +60,7 @@ export async function getExperiencesByCompany(companyId: string): Promise<Interv
     // Return fallback data from JSON file
     return experiencesData
       .filter(exp => exp.companyId === companyId)
-      .map(exp => ({
-        ...exp,
-        downvotes: exp.downvotes || 0
-      }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as InterviewExperience[]
   }
 }
 
@@ -84,11 +76,7 @@ export async function getAllExperiences(): Promise<InterviewExperience[]> {
     console.error('Error fetching all experiences from database, using fallback data:', error)
     // Return fallback data from JSON file
     return experiencesData
-      .map(exp => ({
-        ...exp,
-        downvotes: exp.downvotes || 0
-      }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as InterviewExperience[]
   }
 }
 
@@ -105,12 +93,8 @@ export async function getRecentExperiences(limit: number = 10): Promise<Intervie
     console.error('Error fetching recent experiences from database, using fallback data:', error)
     // Return fallback data from JSON file
     return experiencesData
-      .map(exp => ({
-        ...exp,
-        downvotes: exp.downvotes || 0
-      }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, limit)
+      .slice(0, limit) as InterviewExperience[]
   }
 }
 
@@ -128,15 +112,12 @@ export async function getExperienceById(id: string): Promise<InterviewExperience
   }
 }
 
-export async function createExperience(experienceData: Omit<InterviewExperience, 'upvotes' | 'downvotes' | 'helpful'>): Promise<InterviewExperience | null> {
+export async function createExperience(experienceData: InterviewExperience): Promise<InterviewExperience | null> {
   try {
     await connectDB()
     const experience = new InterviewExperience({
       ...experienceData,
-      date: new Date(experienceData.date),
-      upvotes: 0,
-      downvotes: 0,
-      helpful: 0
+      date: new Date(experienceData.date)
     })
     const savedExperience = await experience.save()
     
@@ -170,33 +151,7 @@ export async function updateExperience(id: string, updates: Partial<InterviewExp
   }
 }
 
-export async function upvoteExperience(id: string): Promise<boolean> {
-  try {
-    await connectDB()
-    const result = await InterviewExperience.updateOne(
-      { id },
-      { $inc: { upvotes: 1 } }
-    )
-    return result.modifiedCount > 0
-  } catch (error) {
-    console.error('Error upvoting experience:', error)
-    return false
-  }
-}
 
-export async function markHelpful(id: string): Promise<boolean> {
-  try {
-    await connectDB()
-    const result = await InterviewExperience.updateOne(
-      { id },
-      { $inc: { helpful: 1 } }
-    )
-    return result.modifiedCount > 0
-  } catch (error) {
-    console.error('Error marking experience as helpful:', error)
-    return false
-  }
-}
 
 export async function deleteExperience(id: string): Promise<boolean> {
   try {

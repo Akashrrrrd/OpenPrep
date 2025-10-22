@@ -250,9 +250,18 @@ export function StudyPlannerForm({ companies, isAuthenticated }: StudyPlannerFor
               </div>
             </div>
 
-            <Button onClick={handleGeneratePlan} className="w-full" size="lg">
-              Generate My Study Plan
-            </Button>
+            <div className="space-y-3">
+              <Button onClick={handleGeneratePlan} className="w-full" size="lg">
+                Generate My Study Plan
+              </Button>
+              {isAuthenticated && (
+                <Button asChild variant="outline" className="w-full" size="lg">
+                  <a href="/study-planner/my-plans">
+                    View My Existing Plans
+                  </a>
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

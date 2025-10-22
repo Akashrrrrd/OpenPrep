@@ -80,10 +80,10 @@ function formatQuestion(q: IQuestion): any {
     authorReputation: q.authorReputation,
     tags: [...q.tags],
     difficulty: q.difficulty,
-    upvotes: q.upvotes || [],
-    downvotes: q.downvotes || [],
-    views: q.views,
-    comments: q.comments || [],
+    upvotes: [], // Empty array for compatibility
+    downvotes: [], // Empty array for compatibility
+    views: 0, // Default value for compatibility
+    comments: [], // Empty array for compatibility
     answers: q.answers ? q.answers.map(formatAnswer) : [],
     hasAcceptedAnswer: q.hasAcceptedAnswer,
     createdAt: q.createdAt?.toISOString() || new Date().toISOString(),
@@ -98,9 +98,9 @@ function formatAnswer(a: IAnswer): any {
     content: a.content,
     author: a.author,
     authorReputation: a.authorReputation,
-    upvotes: a.upvotes || [],
-    downvotes: a.downvotes || [],
-    comments: a.comments || [],
+    upvotes: [], // Empty array for compatibility
+    downvotes: [], // Empty array for compatibility
+    comments: [], // Empty array for compatibility
     isAccepted: a.isAccepted,
     expertVerified: a.expertVerified,
     createdAt: a.createdAt?.toISOString() || new Date().toISOString(),
@@ -143,11 +143,7 @@ export async function getQuestionsByTag(tag: string): Promise<Question[]> {
 export async function getQuestionById(id: string): Promise<Question | null> {
   try {
     await connectDB()
-    const question = await Question.findOneAndUpdate(
-      { id },
-      { $inc: { views: 1 } }, // Increment view count
-      { new: true }
-    ).lean()
+    const question = await Question.findOne({ id }).lean()
     
     if (!question) return null
     
@@ -196,11 +192,11 @@ export async function getQuestionByIdDetailed(id: string): Promise<any | null> {
       authorReputation: question.authorReputation,
       tags: [...question.tags],
       difficulty: question.difficulty,
-      upvotes: question.upvotes || [],
-      downvotes: question.downvotes || [],
-      views: question.views,
-      viewedBy: question.viewedBy || [],
-      comments: question.comments || [],
+      upvotes: [], // Empty array for compatibility
+      downvotes: [], // Empty array for compatibility
+      views: 0, // Default value for compatibility
+      viewedBy: [], // Empty array for compatibility
+      comments: [], // Empty array for compatibility
       answers: question.answers || [],
       hasAcceptedAnswer: question.hasAcceptedAnswer,
       createdAt: question.createdAt?.toISOString() || new Date().toISOString(),
@@ -216,7 +212,7 @@ export async function getPopularQuestions(limit: number = 10): Promise<Question[
   try {
     await connectDB()
     const questions = await Question.find({})
-      .sort({ upvotes: -1, createdAt: -1 })
+      .sort({ createdAt: -1 }) // Sort by creation date since we removed upvotes
       .limit(limit)
       .lean()
     
@@ -267,7 +263,7 @@ export async function searchQuestions(query: string): Promise<Question[]> {
         { tags: { $in: [new RegExp(query, 'i')] } }
       ]
     })
-      .sort({ upvotes: -1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .lean()
     
     return questions.map(formatQuestion)
@@ -277,16 +273,13 @@ export async function searchQuestions(query: string): Promise<Question[]> {
   }
 }
 
-export async function createQuestion(questionData: Omit<Question, 'answers' | 'hasAcceptedAnswer' | 'views' | 'upvotes' | 'downvotes' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
+export async function createQuestion(questionData: Omit<Question, 'answers' | 'hasAcceptedAnswer' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
   try {
     await connectDB()
     const question = new Question({
       ...questionData,
       answers: [],
-      hasAcceptedAnswer: false,
-      views: 0,
-      upvotes: 0,
-      downvotes: 0
+      hasAcceptedAnswer: false
     })
     const savedQuestion = await question.save()
     
@@ -297,13 +290,11 @@ export async function createQuestion(questionData: Omit<Question, 'answers' | 'h
   }
 }
 
-export async function addAnswer(questionId: string, answerData: Omit<Answer, 'upvotes' | 'downvotes' | 'isAccepted' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
+export async function addAnswer(questionId: string, answerData: Omit<Answer, 'isAccepted' | 'createdAt' | 'updatedAt'>): Promise<Question | null> {
   try {
     await connectDB()
     const newAnswer: IAnswer = {
       ...answerData,
-      upvotes: 0,
-      downvotes: 0,
       isAccepted: false,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -324,34 +315,6 @@ export async function addAnswer(questionId: string, answerData: Omit<Answer, 'up
   } catch (error) {
     console.error('Error adding answer:', error)
     return null
-  }
-}
-
-export async function upvoteQuestion(id: string): Promise<boolean> {
-  try {
-    await connectDB()
-    const result = await Question.updateOne(
-      { id },
-      { $inc: { upvotes: 1 } }
-    )
-    return result.modifiedCount > 0
-  } catch (error) {
-    console.error('Error upvoting question:', error)
-    return false
-  }
-}
-
-export async function upvoteAnswer(questionId: string, answerId: string): Promise<boolean> {
-  try {
-    await connectDB()
-    const result = await Question.updateOne(
-      { id: questionId, 'answers.id': answerId },
-      { $inc: { 'answers.$.upvotes': 1 } }
-    )
-    return result.modifiedCount > 0
-  } catch (error) {
-    console.error('Error upvoting answer:', error)
-    return false
   }
 }
 

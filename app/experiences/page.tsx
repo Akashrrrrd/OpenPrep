@@ -108,11 +108,11 @@ export default function ExperiencesPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                <BookOpen className="h-8 w-8 text-primary" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 sm:gap-3">
+                <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                 Interview Experiences
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                 Learn from real interview experiences shared by students
               </p>
             </div>
@@ -186,16 +186,16 @@ export default function ExperiencesPage() {
 
         {/* Filters */}
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Filter className="h-5 w-5" />
               Filter Experiences
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
               {/* Search */}
-              <div className="relative">
+              <div className="relative sm:col-span-2 lg:col-span-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search by company or role..."
@@ -257,6 +257,7 @@ export default function ExperiencesPage() {
                   setSelectedDifficulty("all")
                   setSelectedOutcome("all")
                 }}
+                className="w-full sm:w-auto"
               >
                 Clear Filters
               </Button>

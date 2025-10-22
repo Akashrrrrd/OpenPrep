@@ -1,5 +1,3 @@
-import { PageLoading } from '@/components/loading'
-
 const loadingMessages = [
   "Preparing your content...",
   "Loading placement resources...",
@@ -10,84 +8,70 @@ const loadingMessages = [
   "Syncing with database...",
   "Loading interview experiences...",
   "Fetching company data...",
-  "Preparing study plans...",
-  "Connecting to server...",
-  "Establishing secure connection...",
-  "Loading from cache..."
+  "Preparing study plans..."
 ]
 
 const tips = [
-  "💡 Tip: Practice coding problems daily for better placement results",
-  "🎯 Tip: Research company culture before applying",
-  "📚 Tip: Keep your resume updated with latest projects",
-  "🤝 Tip: Network with alumni and industry professionals",
-  "⏰ Tip: Start preparation at least 6 months before placements",
-  "🔍 Tip: Focus on both technical and soft skills",
-  "📊 Tip: Track your progress with study plans",
-  "🗣️ Tip: Practice mock interviews regularly",
-  "📝 Tip: Keep notes of important concepts",
-  "🎓 Tip: Learn from others' interview experiences",
-  "⚡ Tip: Slow connection? We're optimizing your experience",
-  "🔄 Tip: Having network issues? We'll keep trying for you"
+  "Practice coding problems daily for better placement results",
+  "Research company culture before applying to roles",
+  "Keep your resume updated with latest projects",
+  "Network with alumni and industry professionals",
+  "Start preparation at least 6 months before placements",
+  "Focus on both technical and soft skills development"
 ]
 
 export default function Loading() {
   const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
   const randomTip = tips[Math.floor(Math.random() * tips.length)]
-  
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <div className="max-w-md w-full px-6 text-center space-y-8">
-        {/* Logo and Brand */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            <img 
-              src="/logos/logo.png" 
-              alt="OpenPrep Logo" 
-              className="h-16 w-16 dark:invert animate-pulse"
-            />
-            <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping"></div>
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">OpenPrep</h1>
-            <p className="text-sm text-muted-foreground">
-              Your Gateway to Placement Success
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-slate-950">
+      <div className="max-w-md w-full px-6 text-center">
+        {/* Card Container */}
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-8 space-y-6">
 
-        {/* Loading Animation */}
-        <div className="space-y-6">
-          <div className="flex justify-center">
+          {/* Logo and Brand */}
+          <div className="flex flex-col items-center space-y-3">
             <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
-              <div className="absolute inset-2 animate-pulse rounded-full bg-primary/10"></div>
+              <img
+                src="/logos/logo.png"
+                alt="OpenPrep Logo"
+                className="h-14 w-14 dark:invert"
+              />
+              <div className="absolute inset-0 rounded-full border border-slate-300 dark:border-slate-700 animate-ping"></div>
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">OpenPrep</h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                Your Gateway to Placement Success
+              </p>
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <p className="text-base font-medium">{randomMessage}</p>
-            <div className="flex justify-center">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-              </div>
+
+          {/* Loading Spinner */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 dark:border-slate-800 border-t-slate-900 dark:border-t-slate-100"></div>
+            </div>
+            <p className="text-sm text-slate-700 dark:text-slate-300">{randomMessage}</p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-1.5">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+              <div className="bg-slate-900 dark:bg-slate-100 h-1 rounded-full animate-pulse" style={{ width: '65%' }}></div>
             </div>
           </div>
-        </div>
 
-        {/* Random Tip */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
-          <p className="text-sm text-muted-foreground">{randomTip}</p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+          {/* Tip */}
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-start gap-2 text-left">
+              <svg className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{randomTip}</p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">Almost ready...</p>
         </div>
       </div>
     </div>

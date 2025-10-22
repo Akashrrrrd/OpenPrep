@@ -208,9 +208,36 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+          {/* Mobile Tab Navigation */}
+          <div className="lg:hidden">
+            <Card>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-center transition-colors ${
+                          activeTab === tab.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="text-xs">{tab.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-2">

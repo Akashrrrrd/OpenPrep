@@ -4,7 +4,10 @@ import { Suspense, useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { MaterialCard } from "@/components/material-card"
+import { ChromeAIService } from "@/lib/chrome-ai"
+import { Sparkles, Brain, Wand2, CheckCircle } from "lucide-react"
 
 interface Material {
   id: string
@@ -23,10 +26,19 @@ export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [showAIFeatures, setShowAIFeatures] = useState(false)
+  const [aiCapabilities, setAiCapabilities] = useState<any>(null)
 
   useEffect(() => {
     fetchMaterials()
+    checkAICapabilities()
   }, [])
+
+  const checkAICapabilities = async () => {
+    const capabilities = await ChromeAIService.getCapabilities()
+    setAiCapabilities(capabilities)
+    setShowAIFeatures(capabilities.summarizer || capabilities.writer || capabilities.translator)
+  }
 
   const fetchMaterials = async () => {
     try {
@@ -90,6 +102,72 @@ export default function MaterialsPage() {
             Access comprehensive study materials and resources for all major programming topics and technologies
           </p>
         </div>
+
+        {/* Chrome AI Powered Features */}
+        {showAIFeatures && (
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-purple-500" />
+                Chrome AI Enhanced Study Experience
+                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                  NEW
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-blue-500" />
+                    <h4 className="font-semibold">Smart Summarization</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    AI-powered content summarization using Chrome's Summarizer API
+                  </p>
+                  {aiCapabilities?.summarizer && (
+                    <div className="flex items-center gap-1 text-green-600 text-xs">
+                      <CheckCircle className="h-3 w-3" />
+                      Available
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Wand2 className="h-5 w-5 text-purple-500" />
+                    <h4 className="font-semibold">Content Enhancement</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Improve and rewrite study notes using Chrome's Writer API
+                  </p>
+                  {aiCapabilities?.writer && (
+                    <div className="flex items-center gap-1 text-green-600 text-xs">
+                      <CheckCircle className="h-3 w-3" />
+                      Available
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-yellow-500" />
+                    <h4 className="font-semibold">Multi-language Support</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Translate materials using Chrome's Translator API
+                  </p>
+                  {aiCapabilities?.translator && (
+                    <div className="flex items-center gap-1 text-green-600 text-xs">
+                      <CheckCircle className="h-3 w-3" />
+                      Available
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Card */}
         <Card className="border">

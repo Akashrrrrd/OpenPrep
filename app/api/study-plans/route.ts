@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const studyPlan = await saveStudyPlan({
       id,
+      userId: user.id, // Associate with authenticated user
       targetCompanies,
       availableHoursPerDay,
       targetDate,
