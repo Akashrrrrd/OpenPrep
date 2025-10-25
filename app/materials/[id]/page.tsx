@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-type Params = { params: { id: string } }
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
+type Params = { params: Promise<{ id: string }> }
 
 interface Material {
   id: string
@@ -76,7 +79,8 @@ export async function generateStaticParams() {
 }
 
 export default async function MaterialPage({ params }: Params) {
-  const material = await getMaterialById(params.id)
+  const { id } = await params
+  const material = await getMaterialById(id)
   if (!material) return notFound()
 
   const allMaterials = await getMaterials()

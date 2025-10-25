@@ -74,10 +74,10 @@ Interview preparation is often generic, time-consuming, and lacks personalized f
 ## 🚀 **Getting Started**
 
 ### **Prerequisites**
-- Node.js 18+
-- MongoDB database
-- Chrome browser with AI features enabled
-- npm or yarn
+- **Node.js 18+** installed
+- **Chrome 127+** with AI features enabled (for full AI functionality)
+- **MongoDB database** (local or cloud)
+- **npm** package manager
 
 ### **Installation**
 
@@ -89,20 +89,20 @@ cd openprep
 
 2. **Install dependencies:**
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 3. **Set up environment variables:**
 Create a `.env.local` file:
 ```env
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-NEXTAUTH_SECRET=your_nextauth_secret
+JWT_SECRET=your_jwt_secret_key_minimum_32_characters
+NEXTAUTH_SECRET=your_nextauth_secret_key
 ```
 
-4. **Seed the database:**
+4. **Seed the database with sample data:**
 ```bash
-npm run seed-all
+npm run seed
 ```
 
 5. **Run the development server:**
@@ -112,12 +112,24 @@ npm run dev
 
 6. **Open [http://localhost:3000](http://localhost:3000)**
 
-### **Testing Chrome AI Features**
-1. Use Chrome browser (version 127+)
-2. Enable experimental AI features in chrome://flags
-3. Navigate to interview or forum pages
-4. Look for AI-enhanced buttons with sparkle icons
-5. Test question generation and writing assistance
+### **🤖 Chrome AI Setup & Testing**
+
+#### **For Full AI Experience:**
+1. **Use Chrome 127+** with AI features enabled
+2. **Visit Chrome AI Showcase** at `/chrome-ai-showcase`
+3. **Test Core Features:**
+   - **Interview Practice**: `/interview/technical` or `/interview/hr`
+   - **Smart Forum**: `/forum/ask` (AI writing assistance)
+   - **Study Materials**: `/materials` (AI summarization)
+
+#### **Fallback Mode:**
+- All features work without Chrome AI
+- Basic alternatives provided for all AI functionality
+- No Chrome AI? No problem - full platform functionality maintained
+
+#### **Demo Accounts:**
+- The seeded database includes sample users and content
+- Register a new account or use existing sample data
 
 ## 📁 **Project Structure**
 
@@ -148,6 +160,41 @@ openprep/
 ```
 
 ## 🎯 **Chrome AI Integration Details**
+
+### **APIs Used**
+1. **🧠 Prompt API** - Dynamic interview question generation and evaluation
+2. **📄 Summarizer API** - Study material and content summarization  
+3. **✍️ Writer API** - Content improvement and writing assistance
+4. **🔤 Proofreader API** - Grammar checking and professional communication
+
+### **Key Features**
+- **Smart Interview Practice**: AI generates personalized questions
+- **Writing Enhancement**: Real-time content improvement
+- **Study Optimization**: Intelligent material summarization
+- **Professional Communication**: Grammar and style checking
+
+### **Browser Requirements**
+- **Chrome 127+** for full AI functionality
+- **Fallback support** for all other browsers
+- **Progressive enhancement** - works everywhere, better with AI
+
+## 🏆 **Hackathon Submission Highlights**
+
+### **Innovation**
+- **First interview prep platform** with Chrome AI integration
+- **Real-world application** solving actual user problems
+- **Production-ready implementation** with comprehensive features
+
+### **Technical Excellence**
+- **Modern Stack**: Next.js 15, React 19, TypeScript
+- **Scalable Architecture**: MongoDB, JWT auth, API routes
+- **AI Integration**: 4 Chrome AI APIs with graceful fallbacks
+- **User Experience**: Responsive design, accessibility compliant
+
+### **Business Value**
+- **Authentic Problem Solving**: Interview preparation pain points
+- **Sustainable Model**: Platform valuable beyond AI features
+- **User-Centered Design**: AI enhances, doesn't replace core functionality
 
 ### **Service Architecture**
 ```typescript

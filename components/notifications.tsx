@@ -38,19 +38,30 @@ export function NotificationBell() {
     if (mounted && isAuthenticated) {
       fetchNotifications()
       // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchNotifications, 30000)
+      const interval = setInterval(() => {
+        // Double-check authentication and mount status before polling
+        if (mounted && isAuthenticated) {
+          fetchNotifications()
+        }
+      }, 30000)
       return () => clearInterval(interval)
     }
   }, [mounted, isAuthenticated])
 
   const fetchNotifications = async () => {
+    // Don't fetch if not authenticated or not mounted
+    if (!mounted || !isAuthenticated) {
+      return
+    }
+
     try {
       setLoading(true)
       const response = await fetch('/api/notifications?limit=10', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
       })
       
       if (response.ok) {
@@ -63,12 +74,20 @@ export function NotificationBell() {
         setUnreadCount(0)
       } else {
         console.warn('Failed to fetch notifications:', response.status, response.statusText)
+        // Don't clear notifications on server errors, keep existing state
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error)
-      // Silently fail - don't break the UI
-      setNotifications([])
-      setUnreadCount(0)
+      // Network error (server down, connection issues, etc.)
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.warn('Server unavailable, skipping notification fetch')
+      } else if (error instanceof DOMException && error.name === 'AbortError') {
+        console.warn('Notification fetch timed out')
+      } else if (error instanceof TypeError) {
+        console.warn('Network error fetching notifications:', error.message)
+      } else {
+        console.error('Error fetching notifications:', error)
+      }
+      // Don't clear existing notifications on network errors
     } finally {
       setLoading(false)
     }

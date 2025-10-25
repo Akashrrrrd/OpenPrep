@@ -21,6 +21,8 @@ export function UpgradePrompt({
   variant = 'card',
   className = '' 
 }: UpgradePromptProps) {
+  // HACKATHON MODE: Hide upgrade prompts
+  return null
   const features = {
     'study_plan': {
       title: 'Study Plan Generation',

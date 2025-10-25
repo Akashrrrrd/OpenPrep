@@ -250,12 +250,8 @@ export default function InterviewPage() {
                                                 Answer Improvement
                                             </div>
                                         )}
-                                        {aiCapabilities?.rewriter && (
-                                            <div className="flex items-center gap-2 text-green-600">
-                                                <CheckCircle className="h-3 w-3" />
-                                                Content Rewriting
-                                            </div>
-                                        )}
+
+
                                     </div>
                                 </div>
                             </div>

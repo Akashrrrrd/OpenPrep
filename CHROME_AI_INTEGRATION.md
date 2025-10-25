@@ -4,6 +4,20 @@
 
 OpenPrep leverages Chrome's built-in AI models to provide genuinely enhanced interview preparation experience. This integration focuses on **essential AI capabilities** that directly solve real problems in career preparation.
 
+## ⚡ **Quick Demo Setup**
+
+### **For Judges/Reviewers:**
+1. **Use Chrome 127+** (required for AI features)
+2. **Visit**: `http://localhost:3000/chrome-ai-showcase`
+3. **Test Features**: Interview questions, content improvement, summarization
+4. **Fallback Demo**: Works in any browser with basic alternatives
+
+### **Key Demo Pages:**
+- **Chrome AI Showcase**: `/chrome-ai-showcase` - All AI features in one place
+- **AI Interview Practice**: `/interview/technical` - Core AI functionality
+- **Smart Forum**: `/forum/ask` - AI writing assistance
+- **Study Materials**: `/materials` - AI summarization
+
 ## 🚀 **Core Chrome AI APIs - Purposefully Integrated**
 
 ### **1. 🧠 Prompt API (Language Model) - ESSENTIAL**

@@ -50,8 +50,8 @@ export function AIEnhancedButton({
           break
         case 'generate':
           // This would need specific implementation based on context
-          result = await ChromeAIService.generateInterviewQuestions('technical')
-          result = result ? result.join('\n') : null
+          const questions = await ChromeAIService.generateInterviewQuestions('technical')
+          result = questions ? questions.join('\n') : null
           break
       }
 

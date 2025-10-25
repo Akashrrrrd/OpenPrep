@@ -190,30 +190,7 @@ export default function TestChromeAI() {
             </CardContent>
           </Card>
 
-          {/* Translator Test */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {getStatusIcon(testResults.translator)}
-                Translator API Test
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={() => testAPI('translator', () => 
-                  ChromeAIService.translateContent('Hello, how are you today?', 'es', 'en')
-                )}
-                disabled={testResults.translator === 'testing'}
-              >
-                Test Translation (English to Spanish)
-              </Button>
-              {testOutputs.translator && (
-                <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded">
-                  <pre className="text-sm whitespace-pre-wrap">{testOutputs.translator}</pre>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+
         </div>
 
         {/* Instructions */}

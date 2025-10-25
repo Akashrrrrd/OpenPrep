@@ -108,8 +108,7 @@ const StudyPlanSchema = new mongoose.Schema<IStudyPlan>({
   },
   targetDate: {
     type: Date,
-    required: true,
-    index: true
+    required: true
   },
   currentLevel: {
     type: String,

@@ -51,7 +51,7 @@ export default function AskQuestionPage() {
   const checkAICapabilities = async () => {
     const capabilities = await ChromeAIService.getCapabilities()
     setAiCapabilities(capabilities)
-    setShowAIFeatures(capabilities.writer || capabilities.rewriter || capabilities.proofreader)
+    setShowAIFeatures(capabilities.writer || capabilities.proofreader)
   }
 
   const handleAIImproveTitle = (improvedTitle: string) => {
