@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     creator: "@openprep",
   },
   verification: {
-    google: "REPLACE_WITH_YOUR_GOOGLE_VERIFICATION_CODE",
+    google: "37180a934069a7c5",
     yandex: "your-yandex-verification-code",
     yahoo: "your-yahoo-verification-code",
   },
