@@ -98,8 +98,9 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center justify-center sm:justify-start gap-2">
-              {getSubscriptionBadge()}
-              {user.subscriptionTier === 'free' && (
+              {/* HACKATHON MODE: Hide subscription badges and upgrade buttons */}
+              {false && getSubscriptionBadge()}
+              {false && user.subscriptionTier === 'free' && (
                 <Button asChild size="sm" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-xs px-3 py-1 h-7">
                   <Link href="/pricing">Upgrade</Link>
                 </Button>

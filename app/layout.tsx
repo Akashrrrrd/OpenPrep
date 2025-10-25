@@ -11,9 +11,69 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
-  title: "OpenPrep",
+  title: {
+    default: "OpenPrep - AI-Enhanced Interview Preparation Platform",
+    template: "%s | OpenPrep"
+  },
   description:
-    "OpenPrep is a free, student-friendly hub for company-wise placement preparation resources with verified Google Drive links.",
+    "Master your interviews with OpenPrep's AI-powered platform. Get personalized questions, real-time feedback, and comprehensive preparation resources for technical and HR interviews.",
+  keywords: [
+    "interview preparation",
+    "AI interview practice",
+    "Chrome AI",
+    "technical interviews",
+    "HR interviews",
+    "career coaching",
+    "job preparation",
+    "interview questions",
+    "AI-powered learning",
+    "placement preparation"
+  ],
+  authors: [{ name: "OpenPrep Team" }],
+  creator: "OpenPrep",
+  publisher: "OpenPrep",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://openprep.vercel.app",
+    title: "OpenPrep - AI-Enhanced Interview Preparation Platform",
+    description: "Master your interviews with AI-powered personalized coaching, real-time feedback, and comprehensive preparation resources.",
+    siteName: "OpenPrep",
+    images: [
+      {
+        url: "/logos/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "OpenPrep - AI Interview Preparation Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OpenPrep - AI-Enhanced Interview Preparation",
+    description: "Master your interviews with AI-powered personalized coaching and real-time feedback.",
+    images: ["/logos/logo.png"],
+    creator: "@openprep",
+  },
+  verification: {
+    google: "REPLACE_WITH_YOUR_GOOGLE_VERIFICATION_CODE",
+    yandex: "your-yandex-verification-code",
+    yahoo: "your-yahoo-verification-code",
+  },
+  alternates: {
+    canonical: "https://openprep.vercel.app",
+  },
   icons: {
     icon: [
       {

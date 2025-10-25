@@ -9,10 +9,10 @@ export interface SubscriptionLimits {
 
 export const SUBSCRIPTION_LIMITS: Record<string, SubscriptionLimits> = {
   free: {
-    studyPlans: 3,
+    studyPlans: 999, // HACKATHON MODE: Unlimited for demo
     companies: 999, // All companies as mentioned in pricing
     forumPosts: 999, // Full forum participation as mentioned in pricing
-    features: ['basic_forum', 'all_companies', 'basic_study_plans']
+    features: ['basic_forum', 'all_companies', 'basic_study_plans', 'unlimited_study_plans', 'analytics', 'ai_features'] // HACKATHON MODE: All features
   },
   pro: {
     studyPlans: 999,

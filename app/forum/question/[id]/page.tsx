@@ -3,11 +3,12 @@ import { getQuestionByIdDetailed } from "@/lib/forum"
 import QuestionDetail from "@/components/question-detail"
 
 interface QuestionPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function QuestionPage({ params }: QuestionPageProps) {
-  const question = await getQuestionByIdDetailed(params.id)
+  const { id } = await params
+  const question = await getQuestionByIdDetailed(id)
 
   if (!question) {
     notFound()
@@ -21,7 +22,8 @@ export default async function QuestionPage({ params }: QuestionPageProps) {
 }
 
 export async function generateMetadata({ params }: QuestionPageProps) {
-  const question = await getQuestionByIdDetailed(params.id)
+  const { id } = await params
+  const question = await getQuestionByIdDetailed(id)
 
   if (!question) {
     return {

@@ -37,7 +37,7 @@ export default function MaterialsPage() {
   const checkAICapabilities = async () => {
     const capabilities = await ChromeAIService.getCapabilities()
     setAiCapabilities(capabilities)
-    setShowAIFeatures(capabilities.summarizer || capabilities.writer || capabilities.translator)
+    setShowAIFeatures(capabilities.summarizer || capabilities.writer)
   }
 
   const fetchMaterials = async () => {
@@ -149,21 +149,7 @@ export default function MaterialsPage() {
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-yellow-500" />
-                    <h4 className="font-semibold">Multi-language Support</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Translate materials using Chrome's Translator API
-                  </p>
-                  {aiCapabilities?.translator && (
-                    <div className="flex items-center gap-1 text-green-600 text-xs">
-                      <CheckCircle className="h-3 w-3" />
-                      Available
-                    </div>
-                  )}
-                </div>
+
               </div>
             </CardContent>
           </Card>

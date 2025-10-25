@@ -5,8 +5,6 @@ export interface ChromeAICapabilities {
     languageModel: boolean;
     summarizer: boolean;
     writer: boolean;
-    rewriter: boolean;
-    translator: boolean;
     proofreader: boolean;
 }
 
@@ -37,8 +35,6 @@ export class ChromeAIService {
                 languageModel: false,
                 summarizer: false,
                 writer: false,
-                rewriter: false,
-                translator: false,
                 proofreader: false
             };
         }
@@ -50,8 +46,6 @@ export class ChromeAIService {
                 languageModel: await this.checkAPIAvailability(() => ai.languageModel?.create()),
                 summarizer: await this.checkAPIAvailability(() => ai.summarizer?.create()),
                 writer: await this.checkAPIAvailability(() => ai.writer?.create()),
-                rewriter: await this.checkAPIAvailability(() => ai.rewriter?.create()),
-                translator: await this.checkAPIAvailability(() => ai.translator?.create({ sourceLanguage: 'en', targetLanguage: 'es' })),
                 proofreader: await this.checkAPIAvailability(() => ai.proofreader?.create())
             };
 
@@ -62,8 +56,6 @@ export class ChromeAIService {
                 languageModel: false,
                 summarizer: false,
                 writer: false,
-                rewriter: false,
-                translator: false,
                 proofreader: false
             };
         }
@@ -146,7 +138,7 @@ export class ChromeAIService {
             console.log('Using fallback summarization (Chrome AI not available)');
             const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
             if (sentences.length <= 3) return content;
-            
+
             // Return first 2 sentences as a basic summary
             const summary = sentences.slice(0, 2).join('. ').trim() + '.';
             return `Summary: ${summary} (Note: This is a basic summary. For AI-powered summarization, please use Chrome 127+ with AI features enabled.)`;
@@ -185,13 +177,13 @@ export class ChromeAIService {
             // Fallback: Basic text improvements
             console.log('Using fallback writing improvement (Chrome AI not available)');
             let improved = text.trim();
-            
+
             // Basic improvements
             improved = improved.charAt(0).toUpperCase() + improved.slice(1);
             if (!improved.endsWith('.') && !improved.endsWith('!') && !improved.endsWith('?')) {
                 improved += '.';
             }
-            
+
             return `${improved} (Note: For AI-powered writing improvement, please use Chrome 127+ with AI features enabled.)`;
         } catch (error) {
             console.error('Error improving writing:', error);
@@ -199,46 +191,7 @@ export class ChromeAIService {
         }
     }
 
-    // Rewrite content using Rewriter API with fallback
-    static async rewriteContent(
-        text: string,
-        tone: 'professional' | 'casual' | 'concise' = 'professional'
-    ): Promise<string | null> {
-        try {
-            // Try Chrome AI first
-            if (this.isAvailable() && ('rewriter' in (window as any).ai)) {
-                try {
-                    const rewriter = await (window as any).ai.rewriter.create();
-                    const rewritten = await rewriter.rewrite(text, { tone });
-                    rewriter.destroy();
-                    return rewritten;
-                } catch (aiError) {
-                    console.warn('Chrome AI Rewriter failed, using fallback:', aiError);
-                    // Fall through to fallback
-                }
-            }
 
-            // Fallback: Basic tone adjustments
-            console.log('Using fallback rewriting (Chrome AI not available)');
-            let rewritten = text.trim();
-            
-            if (tone === 'professional') {
-                rewritten = rewritten.replace(/\b(gonna|wanna|gotta)\b/gi, (match) => {
-                    const replacements: { [key: string]: string } = {
-                        'gonna': 'going to',
-                        'wanna': 'want to',
-                        'gotta': 'have to'
-                    };
-                    return replacements[match.toLowerCase()] || match;
-                });
-            }
-            
-            return `${rewritten} (Note: For AI-powered rewriting, please use Chrome 127+ with AI features enabled.)`;
-        } catch (error) {
-            console.error('Error rewriting content:', error);
-            return null;
-        }
-    }
 
     // Proofread content using Proofreader API with fallback
     static async proofreadContent(text: string): Promise<string | null> {
@@ -259,12 +212,12 @@ export class ChromeAIService {
             // Fallback: Basic grammar corrections
             console.log('Using fallback proofreading (Chrome AI not available)');
             let corrected = text.trim();
-            
+
             // Basic corrections
             corrected = corrected.replace(/\bi\b/g, 'I'); // Capitalize 'i'
             corrected = corrected.replace(/\s+/g, ' '); // Remove extra spaces
             corrected = corrected.charAt(0).toUpperCase() + corrected.slice(1); // Capitalize first letter
-            
+
             return `${corrected} (Note: For AI-powered proofreading, please use Chrome 127+ with AI features enabled.)`;
         } catch (error) {
             console.error('Error proofreading content:', error);
@@ -272,49 +225,7 @@ export class ChromeAIService {
         }
     }
 
-    // Translate content using Translator API with fallback
-    static async translateContent(
-        text: string,
-        targetLanguage: string,
-        sourceLanguage: string = 'en'
-    ): Promise<string | null> {
-        try {
-            // Try Chrome AI first
-            if (this.isAvailable() && ('translator' in (window as any).ai)) {
-                try {
-                    const translator = await (window as any).ai.translator.create({
-                        sourceLanguage,
-                        targetLanguage
-                    });
 
-                    const translated = await translator.translate(text);
-                    translator.destroy();
-                    return translated;
-                } catch (aiError) {
-                    console.warn('Chrome AI Translator failed, using fallback:', aiError);
-                    // Fall through to fallback
-                }
-            }
-
-            // Fallback: Inform user about limitation
-            console.log('Using fallback translation (Chrome AI not available)');
-            const languageNames: { [key: string]: string } = {
-                'es': 'Spanish',
-                'fr': 'French',
-                'de': 'German',
-                'it': 'Italian',
-                'pt': 'Portuguese',
-                'ja': 'Japanese',
-                'ko': 'Korean',
-                'zh': 'Chinese'
-            };
-            
-            return `[Translation to ${languageNames[targetLanguage] || targetLanguage} not available - Chrome AI required. Original text: "${text}"]`;
-        } catch (error) {
-            console.error('Error translating content:', error);
-            return null;
-        }
-    }
 
     // Generate follow-up questions based on user's answer
     static async generateFollowUpQuestion(
@@ -400,18 +311,7 @@ declare global {
                     destroy(): void;
                 }>;
             };
-            rewriter?: {
-                create(): Promise<{
-                    rewrite(text: string, options?: { tone?: string }): Promise<string>;
-                    destroy(): void;
-                }>;
-            };
-            translator?: {
-                create(options: { sourceLanguage: string; targetLanguage: string }): Promise<{
-                    translate(text: string): Promise<string>;
-                    destroy(): void;
-                }>;
-            };
+
             proofreader?: {
                 create(): Promise<{
                     proofread(text: string): Promise<string>;

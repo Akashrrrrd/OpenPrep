@@ -49,6 +49,7 @@ export function Navbar() {
     { href: "/", label: "Home" },
     { href: "/study-planner", label: "Planner" },
     { href: "/interview", label: "AI Interview" },
+    { href: "/chrome-ai-showcase", label: "Chrome AI" },
     { href: "/forum", label: "Forum" },
     { href: "/materials", label: "Materials" },
     { href: "/experiences", label: "Experiences" },
@@ -165,7 +166,8 @@ export function Navbar() {
                         Settings
                       </Link>
                     </DropdownMenuItem>
-                    {user.subscriptionTier === 'free' && (
+                    {/* HACKATHON MODE: Hide upgrade link */}
+                    {false && user.subscriptionTier === 'free' && (
                       <DropdownMenuItem asChild>
                         <Link href="/pricing">
                           <Crown className="mr-2 h-4 w-4" />

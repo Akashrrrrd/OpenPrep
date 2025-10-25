@@ -11,11 +11,12 @@ import { verifyToken } from "@/lib/auth"
 import { UsageTracker } from "@/lib/usage-tracker"
 import { Crown, Lock } from "lucide-react"
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 export default async function CompanyPage({ params }: Params) {
+  const { id } = await params
   const companies = await getCompanies()
-  const company = companies.find((c) => c.id === params.id)
+  const company = companies.find((c) => c.id === id)
   if (!company) return notFound()
 
   // Check authentication and usage limits
@@ -29,12 +30,12 @@ export default async function CompanyPage({ params }: Params) {
     try {
       user = await verifyToken(token)
       if (user) {
-        usageCheck = await UsageTracker.checkCompanyAccess(user.id, params.id)
+        usageCheck = await UsageTracker.checkCompanyAccess(user.id, id)
         hasAccess = usageCheck.allowed
         
         // Track company access if allowed
         if (hasAccess) {
-          await UsageTracker.trackCompanyAccess(user.id, params.id)
+          await UsageTracker.trackCompanyAccess(user.id, id)
         }
       }
     } catch (error) {
@@ -42,7 +43,7 @@ export default async function CompanyPage({ params }: Params) {
     }
   }
 
-  const experiences = await getExperiencesByCompany(params.id)
+  const experiences = await getExperiencesByCompany(id)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -144,7 +145,7 @@ export default async function CompanyPage({ params }: Params) {
             <h2 className="text-xl sm:text-2xl font-bold">Recent Interview Experiences</h2>
             <p className="text-muted-foreground text-sm sm:text-base">Real experiences from students who interviewed at {company.name}</p>
           </div>
-          <Link href={`/experiences/share?company=${params.id}`} className="w-full sm:w-auto">
+          <Link href={`/experiences/share?company=${id}`} className="w-full sm:w-auto">
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
               Share Your Experience
             </Button>
@@ -169,7 +170,7 @@ export default async function CompanyPage({ params }: Params) {
               <p className="text-muted-foreground mb-4 max-w-sm">
                 Be the first to share your interview experience with {company.name} and help fellow students prepare better.
               </p>
-              <Link href={`/experiences/share?company=${params.id}`}>
+              <Link href={`/experiences/share?company=${id}`}>
                 <Button>Share Your Experience</Button>
               </Link>
             </CardContent>
