@@ -71,6 +71,7 @@ export const metadata: Metadata = {
     yandex: "your-yandex-verification-code",
     yahoo: "your-yahoo-verification-code",
   },
+  metadataBase: new URL("https://openprep.vercel.app"),
   alternates: {
     canonical: "https://openprep.vercel.app",
   },

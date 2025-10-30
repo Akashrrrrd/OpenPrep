@@ -244,15 +244,32 @@ export function GlobalSearch({ onResultClick }: GlobalSearchProps) {
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => setShowResults(true)}
-          className="pl-10 pr-20"
+          className="pl-10 pr-24"
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+          {query && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setQuery('')
+                setResults([])
+                setSuggestions([])
+                setShowResults(false)
+              }}
+              className="h-6 w-6 p-0 hover:bg-gray-100"
+              title="Clear search"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
           {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
               onClick={clearFilters}
               className="h-6 w-6 p-0"
+              title="Clear filters"
             >
               <X className="h-3 w-3" />
             </Button>
