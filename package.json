@@ -27,8 +27,7 @@
     "seed-forum": "tsx scripts/seed-forum.ts",
     "test-auth": "tsx scripts/test-auth.ts",
     "test-study-planner": "tsx scripts/test-study-planner.ts",
-    "verify-deployment": "tsx scripts/verify-deployment.ts",
-    "postbuild": "next-sitemap"
+    "verify-deployment": "tsx scripts/verify-deployment.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.0",
