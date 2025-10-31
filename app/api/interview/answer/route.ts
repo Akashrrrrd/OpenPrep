@@ -27,18 +27,32 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the question details for evaluation
-    const allQuestions = getRandomQuestions(session.type, 15)
-    const questionData = allQuestions.find(q => q.question === session.questions[questionIndex].question)
-    
-    if (!questionData) {
-      return NextResponse.json({ error: 'Question data not found' }, { status: 404 })
+    let questionData
+    if (session.type === 'resume-based') {
+      // For resume-based interviews, use the stored question data
+      questionData = {
+        question: session.questions[questionIndex].question,
+        keywords: session.questions[questionIndex].keywords || [],
+        category: session.questions[questionIndex].category || 'Technical',
+        difficulty: session.questions[questionIndex].difficulty || 'medium'
+      }
+    } else {
+      // For traditional interviews, find from predefined questions
+      const allQuestions = getRandomQuestions(session.type, 15)
+      questionData = allQuestions.find(q => q.question === session.questions[questionIndex].question)
+      
+      if (!questionData) {
+        return NextResponse.json({ error: 'Question data not found' }, { status: 404 })
+      }
     }
 
-    // Evaluate the answer
-    const evaluation = InterviewEvaluator.evaluateAnswer(
+    // Evaluate the answer with enhanced voice response analysis
+    const evaluation = InterviewEvaluator.evaluateVoiceAnswer(
       answer,
       questionData.keywords,
-      questionData.category
+      questionData.category,
+      timeSpent,
+      session.resumeAnalysis
     )
 
     // Update the session with the answer and evaluation
@@ -78,15 +92,19 @@ export async function POST(request: NextRequest) {
         message: 'Interview completed successfully!'
       })
     } else {
-      // Return next question
+      // Return next question with additional data for resume-based interviews
+      const nextQuestionData = {
+        index: nextQuestionIndex,
+        question: session.questions[nextQuestionIndex].question,
+        category: session.questions[nextQuestionIndex].category || 'Technical',
+        difficulty: session.questions[nextQuestionIndex].difficulty || 'medium',
+        totalQuestions: session.questions.length
+      }
+
       return NextResponse.json({
         completed: false,
         evaluation,
-        nextQuestion: {
-          index: nextQuestionIndex,
-          question: session.questions[nextQuestionIndex].question,
-          totalQuestions: session.questions.length
-        }
+        nextQuestion: nextQuestionData
       })
     }
 

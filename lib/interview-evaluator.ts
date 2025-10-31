@@ -31,8 +31,14 @@ export interface OverallAssessment {
 
 export class InterviewEvaluator {
   
-  // Evaluate a single answer
-  static evaluateAnswer(answer: string, keywords: string[], category: string): EvaluationResult {
+  // Enhanced evaluation for voice-based answers with resume context
+  static evaluateVoiceAnswer(
+    answer: string, 
+    keywords: string[], 
+    category: string, 
+    timeSpent: number = 0,
+    resumeAnalysis?: any
+  ): EvaluationResult {
     if (!answer || answer.trim().length < 10) {
       return {
         score: 0,
@@ -40,7 +46,7 @@ export class InterviewEvaluator {
         keywordsFound: [],
         keywordsMissed: keywords,
         strengths: [],
-        improvements: ["Provide more detailed explanations", "Include specific examples"]
+        improvements: ["Provide more detailed explanations", "Include specific examples", "Speak more confidently"]
       }
     }
 
@@ -58,46 +64,72 @@ export class InterviewEvaluator {
     })
 
     // Calculate base score from keyword coverage
-    const keywordScore = (keywordsFound.length / keywords.length) * 60
+    const keywordScore = (keywordsFound.length / Math.max(keywords.length, 1)) * 50
 
-    // Additional scoring factors
+    // Voice-specific scoring factors
     let bonusScore = 0
     const wordCount = answer.trim().split(/\s+/).length
 
-    // Length bonus (optimal 50-200 words)
-    if (wordCount >= 50 && wordCount <= 200) {
+    // Length bonus for voice responses (optimal 30-150 words for spoken answers)
+    if (wordCount >= 30 && wordCount <= 150) {
+      bonusScore += 20
+    } else if (wordCount >= 20 && wordCount < 30) {
       bonusScore += 15
-    } else if (wordCount >= 30 && wordCount < 50) {
-      bonusScore += 10
-    } else if (wordCount > 200 && wordCount <= 300) {
+    } else if (wordCount > 150 && wordCount <= 200) {
       bonusScore += 10
     }
 
-    // Structure bonus (contains examples, explanations)
+    // Time-based scoring (good pacing)
+    if (timeSpent > 0) {
+      const wordsPerSecond = wordCount / timeSpent
+      if (wordsPerSecond >= 1.5 && wordsPerSecond <= 3) { // Good speaking pace
+        bonusScore += 10
+      } else if (wordsPerSecond >= 1 && wordsPerSecond < 1.5) {
+        bonusScore += 5 // Slower but thoughtful
+      }
+    }
+
+    // Resume relevance bonus
+    if (resumeAnalysis) {
+      const resumeSkills = resumeAnalysis.skills || []
+      const resumeTech = resumeAnalysis.technologies || []
+      
+      resumeSkills.forEach((skill: string) => {
+        if (answerLower.includes(skill.toLowerCase())) {
+          bonusScore += 5
+        }
+      })
+      
+      resumeTech.forEach((tech: string) => {
+        if (answerLower.includes(tech.toLowerCase())) {
+          bonusScore += 5
+        }
+      })
+    }
+
+    // Voice communication patterns
     if (answerLower.includes('example') || answerLower.includes('for instance') || answerLower.includes('such as')) {
       bonusScore += 10
     }
 
-    // Technical depth bonus
-    if (category === 'JavaScript' || category === 'React' || category === 'Database') {
-      if (answerLower.includes('because') || answerLower.includes('reason') || answerLower.includes('why')) {
-        bonusScore += 5
-      }
+    // Confidence indicators in speech
+    if (answerLower.includes('i believe') || answerLower.includes('in my experience') || answerLower.includes('i think')) {
+      bonusScore += 5
     }
 
-    // Communication bonus for HR questions
-    if (category === 'Introduction' || category === 'Teamwork' || category === 'Problem Solving') {
-      if (answerLower.includes('team') || answerLower.includes('collaborate') || answerLower.includes('communicate')) {
-        bonusScore += 5
+    // Technical depth for voice responses
+    if (category === 'JavaScript' || category === 'React' || category === 'Database') {
+      if (answerLower.includes('because') || answerLower.includes('reason') || answerLower.includes('why')) {
+        bonusScore += 8
       }
     }
 
     const finalScore = Math.min(100, Math.max(0, keywordScore + bonusScore))
 
-    // Generate feedback
-    const feedback = this.generateFeedback(finalScore, keywordsFound, keywordsMissed, wordCount, category)
-    const strengths = this.identifyStrengths(answerLower, keywordsFound, category)
-    const improvements = this.identifyImprovements(keywordsMissed, wordCount, category)
+    // Generate voice-specific feedback
+    const feedback = this.generateVoiceFeedback(finalScore, keywordsFound, keywordsMissed, wordCount, timeSpent, category)
+    const strengths = this.identifyVoiceStrengths(answerLower, keywordsFound, timeSpent, wordCount, category)
+    const improvements = this.identifyVoiceImprovements(keywordsMissed, wordCount, timeSpent, category)
 
     return {
       score: Math.round(finalScore),
@@ -109,39 +141,64 @@ export class InterviewEvaluator {
     }
   }
 
-  // Generate detailed feedback for an answer
-  private static generateFeedback(score: number, keywordsFound: string[], keywordsMissed: string[], wordCount: number, category: string): string {
+  // Generate voice-specific feedback
+  private static generateVoiceFeedback(
+    score: number, 
+    keywordsFound: string[], 
+    keywordsMissed: string[], 
+    wordCount: number, 
+    timeSpent: number, 
+    category: string
+  ): string {
     let feedback = ""
 
     if (score >= 80) {
-      feedback = "Excellent answer! You demonstrated strong understanding and covered most key concepts."
+      feedback = "Excellent voice response! You spoke clearly and covered key concepts well."
     } else if (score >= 60) {
-      feedback = "Good answer with solid understanding. Some areas could be expanded."
+      feedback = "Good spoken answer with clear communication. Some technical areas could be expanded."
     } else if (score >= 40) {
-      feedback = "Decent answer but missing some important concepts. Consider adding more detail."
+      feedback = "Decent response but missing some important concepts. Practice explaining technical topics aloud."
     } else {
-      feedback = "Answer needs improvement. Focus on covering key concepts and providing more explanation."
+      feedback = "Voice response needs improvement. Focus on speaking more confidently and covering key concepts."
     }
 
     if (keywordsFound.length > 0) {
-      feedback += ` You correctly mentioned: ${keywordsFound.join(', ')}.`
+      feedback += ` You clearly mentioned: ${keywordsFound.join(', ')}.`
     }
 
     if (keywordsMissed.length > 0 && keywordsMissed.length <= 3) {
       feedback += ` Consider discussing: ${keywordsMissed.slice(0, 3).join(', ')}.`
     }
 
-    if (wordCount < 30) {
-      feedback += " Try to provide more detailed explanations with examples."
-    } else if (wordCount > 300) {
-      feedback += " Good detail, but try to be more concise in your explanations."
+    // Voice-specific feedback
+    if (timeSpent > 0) {
+      const wordsPerSecond = wordCount / timeSpent
+      if (wordsPerSecond < 1) {
+        feedback += " Try to speak a bit faster and more confidently."
+      } else if (wordsPerSecond > 3.5) {
+        feedback += " Good enthusiasm! Try to slow down slightly for better clarity."
+      } else {
+        feedback += " Good speaking pace and clarity."
+      }
+    }
+
+    if (wordCount < 20) {
+      feedback += " Try to elaborate more when speaking - provide examples and explanations."
+    } else if (wordCount > 200) {
+      feedback += " Good detail, but practice being more concise in verbal responses."
     }
 
     return feedback
   }
 
-  // Identify strengths in the answer
-  private static identifyStrengths(answerLower: string, keywordsFound: string[], category: string): string[] {
+  // Identify voice-specific strengths
+  private static identifyVoiceStrengths(
+    answerLower: string, 
+    keywordsFound: string[], 
+    timeSpent: number, 
+    wordCount: number, 
+    category: string
+  ): string[] {
     const strengths: string[] = []
 
     if (keywordsFound.length >= 3) {
@@ -156,30 +213,50 @@ export class InterviewEvaluator {
       strengths.push("Practical experience mentioned")
     }
 
-    if (answerLower.length > 200) {
-      strengths.push("Detailed explanation")
+    if (wordCount >= 50 && wordCount <= 150) {
+      strengths.push("Good response length for voice")
     }
 
-    if (category.includes('HR') || category === 'Teamwork') {
-      if (answerLower.includes('team') || answerLower.includes('collaborate')) {
-        strengths.push("Team-oriented mindset")
+    if (timeSpent > 0) {
+      const wordsPerSecond = wordCount / timeSpent
+      if (wordsPerSecond >= 1.5 && wordsPerSecond <= 3) {
+        strengths.push("Good speaking pace")
       }
+    }
+
+    if (answerLower.includes('i believe') || answerLower.includes('in my experience')) {
+      strengths.push("Confident communication")
     }
 
     return strengths
   }
 
-  // Identify areas for improvement
-  private static identifyImprovements(keywordsMissed: string[], wordCount: number, category: string): string[] {
+  // Identify voice-specific improvements
+  private static identifyVoiceImprovements(
+    keywordsMissed: string[], 
+    wordCount: number, 
+    timeSpent: number, 
+    category: string
+  ): string[] {
     const improvements: string[] = []
 
     if (keywordsMissed.length > 3) {
       improvements.push("Cover more key technical concepts")
     }
 
-    if (wordCount < 50) {
+    if (wordCount < 30) {
       improvements.push("Provide more detailed explanations")
       improvements.push("Include specific examples")
+      improvements.push("Speak more confidently and elaborately")
+    }
+
+    if (timeSpent > 0) {
+      const wordsPerSecond = wordCount / timeSpent
+      if (wordsPerSecond < 1) {
+        improvements.push("Speak more fluently and confidently")
+      } else if (wordsPerSecond > 3.5) {
+        improvements.push("Slow down for better clarity")
+      }
     }
 
     if (category === 'JavaScript' || category === 'React') {
@@ -187,16 +264,16 @@ export class InterviewEvaluator {
       improvements.push("Mention practical use cases")
     }
 
-    if (category.includes('HR')) {
-      improvements.push("Use the STAR method (Situation, Task, Action, Result)")
-      improvements.push("Include quantifiable achievements")
-    }
-
     return improvements
   }
 
+  // Legacy method for backward compatibility
+  static evaluateAnswer(answer: string, keywords: string[], category: string): EvaluationResult {
+    return this.evaluateVoiceAnswer(answer, keywords, category, 0)
+  }
+
   // Generate overall assessment for the entire interview
-  static generateOverallAssessment(questions: any[], type: 'technical' | 'hr'): OverallAssessment {
+  static generateOverallAssessment(questions: any[], type: string): OverallAssessment {
     const totalScore = questions.reduce((sum, q) => sum + (q.score || 0), 0)
     const averageScore = questions.length > 0 ? totalScore / questions.length : 0
 
@@ -238,7 +315,7 @@ export class InterviewEvaluator {
     // Generate detailed feedback
     const feedback = {
       overall: this.generateOverallFeedback(averageScore, type),
-      technical: type === 'technical' ? this.generateTechnicalFeedback(averageScore) : "N/A - HR Interview",
+      technical: type === 'technical' || type === 'resume-based' ? this.generateTechnicalFeedback(averageScore) : "N/A - HR Interview",
       communication: this.generateCommunicationFeedback(questions),
       confidence: this.generateConfidenceFeedback(questions)
     }
@@ -271,24 +348,10 @@ export class InterviewEvaluator {
       return 'Algorithms'
     }
     
-    // HR categories
-    if (questionLower.includes('yourself') || questionLower.includes('tell me about')) {
-      return 'Introduction'
-    }
-    if (questionLower.includes('team') || questionLower.includes('difficult')) {
-      return 'Teamwork'
-    }
-    if (questionLower.includes('strength') || questionLower.includes('weakness')) {
-      return 'Self Assessment'
-    }
-    if (questionLower.includes('challenging') || questionLower.includes('problem')) {
-      return 'Problem Solving'
-    }
-    
     return 'General'
   }
 
-  private static getCategorySuggestions(category: string, type: 'technical' | 'hr'): string[] {
+  private static getCategorySuggestions(category: string, type: string): string[] {
     const suggestions: { [key: string]: string[] } = {
       'JavaScript': [
         'Practice ES6+ features and modern JavaScript concepts',
@@ -307,24 +370,6 @@ export class InterviewEvaluator {
         'Learn about different database types and their use cases',
         'Practice with both relational and NoSQL databases',
         'Understand indexing and query optimization'
-      ],
-      'Introduction': [
-        'Practice your elevator pitch',
-        'Prepare specific examples of your achievements',
-        'Research the company and role thoroughly',
-        'Focus on relevant skills and experiences'
-      ],
-      'Teamwork': [
-        'Prepare STAR method examples',
-        'Think of specific collaboration experiences',
-        'Practice conflict resolution scenarios',
-        'Highlight leadership and communication skills'
-      ],
-      'Problem Solving': [
-        'Use the STAR method for behavioral questions',
-        'Prepare multiple examples of challenges overcome',
-        'Focus on your thought process and approach',
-        'Quantify the impact of your solutions'
       ]
     }
 
@@ -336,8 +381,8 @@ export class InterviewEvaluator {
     ]
   }
 
-  private static generateOverallFeedback(score: number, type: 'technical' | 'hr'): string {
-    const interviewType = type === 'technical' ? 'technical' : 'HR'
+  private static generateOverallFeedback(score: number, type: string): string {
+    const interviewType = type === 'technical' || type === 'resume-based' ? 'technical' : 'HR'
     
     if (score >= 85) {
       return `Outstanding performance in this ${interviewType} interview! You demonstrated excellent knowledge and communication skills. You're well-prepared for similar interviews.`

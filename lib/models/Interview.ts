@@ -39,8 +39,15 @@ const InterviewSessionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['technical', 'hr'],
+    enum: ['technical', 'hr', 'resume-based'],
     required: true
+  },
+  resumeAnalysis: {
+    skills: [String],
+    technologies: [String],
+    experience: [String],
+    keywords: [String],
+    rawText: String
   },
   status: {
     type: String,
@@ -66,7 +73,10 @@ const InterviewSessionSchema = new mongoose.Schema({
     answer: String,
     timeSpent: Number, // seconds spent on this question
     score: Number, // 0-10 score based on keywords and quality
-    feedback: String
+    feedback: String,
+    category: String,
+    difficulty: String,
+    keywords: [String]
   }],
   overallScore: {
     type: Number,

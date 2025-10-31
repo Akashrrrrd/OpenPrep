@@ -250,3 +250,213 @@ export const getRandomQuestions = (type: 'technical' | 'hr', count: number = 15)
   const shuffled = [...questions].sort(() => 0.5 - Math.random())
   return shuffled.slice(0, Math.min(count, questions.length))
 }
+
+// Resume analysis interface
+export interface ResumeAnalysis {
+  skills: string[]
+  technologies: string[]
+  experience: string[]
+  keywords: string[]
+  rawText: string
+}
+
+// Generate questions based on resume analysis
+export const generateResumeBasedQuestions = (resumeAnalysis: ResumeAnalysis, count: number = 8) => {
+  const { skills, technologies, experience, keywords } = resumeAnalysis
+  const questions = []
+
+  // Generate custom questions based on specific skills found in resume
+  const customQuestions = generateCustomQuestions(skills, technologies, experience)
+  
+  // Prioritize custom questions (60% of total)
+  const customCount = Math.ceil(count * 0.6)
+  questions.push(...customQuestions.slice(0, customCount))
+
+  // Find relevant predefined questions based on resume skills
+  const relevantQuestions = technicalQuestions.filter(q => 
+    skills.some(skill => 
+      q.category.toLowerCase().includes(skill.toLowerCase()) ||
+      q.keywords.some(keyword => keyword.toLowerCase().includes(skill.toLowerCase())) ||
+      q.question.toLowerCase().includes(skill.toLowerCase())
+    ) ||
+    technologies.some(tech =>
+      q.category.toLowerCase().includes(tech.toLowerCase()) ||
+      q.keywords.some(keyword => keyword.toLowerCase().includes(tech.toLowerCase())) ||
+      q.question.toLowerCase().includes(tech.toLowerCase())
+    )
+  )
+
+  // Add relevant predefined questions (40% of total)
+  const remainingCount = count - questions.length
+  if (remainingCount > 0 && relevantQuestions.length > 0) {
+    questions.push(...relevantQuestions.slice(0, remainingCount))
+  }
+
+  // If still not enough questions, generate more custom ones
+  if (questions.length < count) {
+    const additionalCustom = generateExperienceBasedQuestions(experience, skills)
+    questions.push(...additionalCustom.slice(0, count - questions.length))
+  }
+
+  // Ensure we have enough questions
+  if (questions.length < count) {
+    const fallbackQuestions = technicalQuestions.filter(q => !questions.includes(q))
+    questions.push(...fallbackQuestions.slice(0, count - questions.length))
+  }
+
+  // Shuffle and return
+  return questions.sort(() => 0.5 - Math.random()).slice(0, count)
+}
+
+// Generate custom questions based on specific skills and technologies
+const generateCustomQuestions = (skills: string[], technologies: string[], experience: string[]) => {
+  const customQuestions = []
+
+  // JavaScript/TypeScript specific questions
+  if (skills.some(s => s.toLowerCase().includes('javascript') || s.toLowerCase().includes('typescript'))) {
+    customQuestions.push(
+      {
+        question: "Based on your JavaScript experience, explain how closures work and provide a practical example.",
+        category: "JavaScript",
+        difficulty: "medium",
+        keywords: ["closures", "scope", "lexical scope", "inner function", "practical example"],
+        sampleAnswer: "Closures allow inner functions to access outer function variables even after the outer function returns.",
+        companies: ["Google", "Meta", "Microsoft"]
+      },
+      {
+        question: "How do you handle asynchronous operations in JavaScript? Compare callbacks, promises, and async/await.",
+        category: "JavaScript",
+        difficulty: "medium",
+        keywords: ["asynchronous", "callbacks", "promises", "async/await", "event loop"],
+        sampleAnswer: "Callbacks can lead to callback hell, promises provide better chaining, async/await offers cleaner syntax.",
+        companies: ["Netflix", "Uber", "Airbnb"]
+      }
+    )
+  }
+
+  // React specific questions
+  if (skills.some(s => s.toLowerCase().includes('react'))) {
+    customQuestions.push(
+      {
+        question: "In your React projects, how do you manage state? Compare useState, useReducer, and Context API.",
+        category: "React",
+        difficulty: "medium",
+        keywords: ["state management", "useState", "useReducer", "Context API", "props drilling"],
+        sampleAnswer: "useState for simple state, useReducer for complex state logic, Context API to avoid props drilling.",
+        companies: ["Meta", "Netflix", "Spotify"]
+      },
+      {
+        question: "How do you optimize React component performance? Discuss memoization and re-rendering.",
+        category: "React",
+        difficulty: "hard",
+        keywords: ["performance", "memoization", "React.memo", "useMemo", "useCallback", "re-rendering"],
+        sampleAnswer: "Use React.memo, useMemo, useCallback to prevent unnecessary re-renders and expensive calculations.",
+        companies: ["Meta", "Google", "Microsoft"]
+      }
+    )
+  }
+
+  // Node.js specific questions
+  if (skills.some(s => s.toLowerCase().includes('node'))) {
+    customQuestions.push(
+      {
+        question: "Describe your experience with Node.js. How do you handle errors in asynchronous operations?",
+        category: "Node.js",
+        difficulty: "medium",
+        keywords: ["error handling", "try-catch", "promises", "async/await", "error-first callbacks"],
+        sampleAnswer: "Use try-catch with async/await, .catch() with promises, and error-first callbacks for traditional Node.js patterns.",
+        companies: ["Netflix", "Uber", "LinkedIn"]
+      }
+    )
+  }
+
+  // Python specific questions
+  if (skills.some(s => s.toLowerCase().includes('python'))) {
+    customQuestions.push(
+      {
+        question: "What Python frameworks have you worked with? Compare their use cases and advantages.",
+        category: "Python",
+        difficulty: "medium",
+        keywords: ["frameworks", "Django", "Flask", "FastAPI", "use cases", "advantages"],
+        sampleAnswer: "Django for full-featured web apps, Flask for lightweight APIs, FastAPI for modern async APIs with automatic documentation.",
+        companies: ["Google", "Instagram", "Dropbox"]
+      }
+    )
+  }
+
+  // Database questions based on technologies
+  if (technologies.some(t => ['mongodb', 'mysql', 'postgresql', 'redis'].some(db => t.toLowerCase().includes(db)))) {
+    const dbTechs = technologies.filter(t => ['mongodb', 'mysql', 'postgresql', 'redis'].some(db => t.toLowerCase().includes(db)))
+    customQuestions.push(
+      {
+        question: `You've worked with ${dbTechs.join(', ')}. How do you choose between SQL and NoSQL databases for a project?`,
+        category: "Database",
+        difficulty: "medium",
+        keywords: ["SQL", "NoSQL", "database selection", "use cases", "scalability", "consistency"],
+        sampleAnswer: "Choose SQL for complex relationships and ACID compliance, NoSQL for scalability and flexible schemas.",
+        companies: ["Amazon", "Google", "MongoDB"]
+      }
+    )
+  }
+
+  // AWS/Cloud questions
+  if (technologies.some(t => ['aws', 'azure', 'gcp', 'docker', 'kubernetes'].some(cloud => t.toLowerCase().includes(cloud)))) {
+    const cloudTechs = technologies.filter(t => ['aws', 'azure', 'gcp', 'docker', 'kubernetes'].some(cloud => t.toLowerCase().includes(cloud)))
+    customQuestions.push(
+      {
+        question: `Describe your experience with ${cloudTechs.join(', ')}. How do you ensure application scalability in the cloud?`,
+        category: "Cloud & DevOps",
+        difficulty: "hard",
+        keywords: ["cloud", "scalability", "load balancing", "auto scaling", "containerization"],
+        sampleAnswer: "Use load balancers, auto scaling groups, containerization, and microservices for horizontal scalability.",
+        companies: ["Amazon", "Microsoft", "Google"]
+      }
+    )
+  }
+
+  return customQuestions
+}
+
+// Generate experience-based questions
+const generateExperienceBasedQuestions = (experience: string[], skills: string[]) => {
+  const questions = []
+
+  // Frontend experience questions
+  if (experience.some(exp => exp.toLowerCase().includes('frontend'))) {
+    questions.push({
+      question: "Tell me about a challenging frontend project you've worked on. What technologies did you use and what problems did you solve?",
+      category: "Frontend Experience",
+      difficulty: "medium",
+      keywords: ["project experience", "challenges", "problem solving", "technologies"],
+      sampleAnswer: "Describe a specific project, technologies used, challenges faced, and solutions implemented.",
+      companies: ["All Companies"]
+    })
+  }
+
+  // Backend experience questions
+  if (experience.some(exp => exp.toLowerCase().includes('backend'))) {
+    questions.push({
+      question: "Describe a backend system you've designed. How did you handle scalability and performance?",
+      category: "Backend Experience",
+      difficulty: "hard",
+      keywords: ["system design", "scalability", "performance", "architecture"],
+      sampleAnswer: "Explain system architecture, scalability strategies, performance optimizations, and trade-offs made.",
+      companies: ["All Companies"]
+    })
+  }
+
+  // Years of experience questions
+  const experienceYears = experience.find(exp => exp.includes('years'))
+  if (experienceYears) {
+    questions.push({
+      question: `With your ${experienceYears} in software development, what's the most important lesson you've learned?`,
+      category: "Professional Growth",
+      difficulty: "easy",
+      keywords: ["experience", "lessons learned", "professional growth", "best practices"],
+      sampleAnswer: "Share a meaningful lesson about code quality, teamwork, problem-solving, or technical decision-making.",
+      companies: ["All Companies"]
+    })
+  }
+
+  return questions
+}
