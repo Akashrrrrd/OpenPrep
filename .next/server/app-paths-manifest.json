@@ -1,5 +1,8 @@
 {
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/search/route": "app/api/search/route.js",
   "/api/notifications/route": "app/api/notifications/route.js",
+  "/api/interview/resume-analysis/route": "app/api/interview/resume-analysis/route.js",
   "/page": "app/page.js",
   "/interview/page": "app/interview/page.js"
 }
