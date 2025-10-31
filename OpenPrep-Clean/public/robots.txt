@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Important pages for crawling
+Allow: /chrome-ai-showcase
+Allow: /interview
+Allow: /materials
+Allow: /forum
+Allow: /experiences
+Allow: /study-planner
+
+# Block admin and API routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+
+# Sitemap location
+Sitemap: https://openprep.vercel.app/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

@@ -1,0 +1,16 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "category": "Algorithms",
+      "question": "Explain the time complexity of binary search.",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 2,
+      "category": "Data Structures",
+      "question": "What is the difference between an array and a linked list?",
+      "difficulty": "Easy"
+    }
+  ]
+}

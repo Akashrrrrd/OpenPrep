@@ -1,0 +1,14 @@
+{
+  "companies": [
+    {
+      "id": 1,
+      "name": "Google",
+      "description": "Tech giant specializing in Internet-related services and products."
+    },
+    {
+      "id": 2,
+      "name": "Microsoft",
+      "description": "Leading technology company known for its software products."
+    }
+  ]
+}

@@ -45,6 +45,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/interview/resume-analysis/route.js"
+    ],
+    "/api/interview/answer/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/interview/answer/route.js"
     ]
   }
 }
